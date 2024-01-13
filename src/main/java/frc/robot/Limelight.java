@@ -6,7 +6,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 
 public class Limelight {
     NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
-    NetworkTableEntry tx = table.getEntry("tx"); // x axis position (from where tho? like is it just one value or what?)
+    NetworkTableEntry tx = table.getEntry("tx"); // x axis position 
     NetworkTableEntry ty = table.getEntry("ty"); // y axis position
     NetworkTableEntry tv = table.getEntry("tv"); // is there valid target
     NetworkTableEntry ta = table.getEntry("ta"); // area in view
@@ -47,5 +47,21 @@ public class Limelight {
         return ta.getDouble(0);
 
     }
+
+    double targetOffsetAngle_Vertical = ty.getDouble(0.0);
+    
+    double limelightMountAngleDegrees = 45.0; //will need to change
+
+    double limelightLensHeight = 6.0; //in inches -- will need to change
+    //distance from center of the limelight lens tot he floor
+
+    double goalHeight = 63.0; //might need to change // in inches
+    //this is for the speaker
+
+    double angleToGoalDegrees = limelightMountAngleDegrees + targetOffsetAngle_Vertical;
+    double angleToGoalRadians = angleToGoalDegrees * (3.14159 / 180.0);
+
+    double distanceFromLimelightToGoal = (goalHeight -limelightLensHeight) / Math.tan(angleToGoalRadians);
+    //calculate distance
 
 }
