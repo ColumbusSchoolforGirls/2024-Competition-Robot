@@ -23,7 +23,7 @@ public class Robot extends TimedRobot {
   
   // possible auto actions
   enum AutoAction {
-    DRIVE, ARM, SHOOT, TURN, SQUARE_AND_SHOOT
+    DRIVE, AIM, SHOOT, TURN, SQUARE
   };
 
   // dashboard key for each auto path
@@ -48,19 +48,19 @@ public class Robot extends TimedRobot {
   int[] defaultValues = {};
 
   //start middle -- probably need to make more paths, just a template -- need to edit
-  AutoAction[] autoMiddle = {AutoAction.DRIVE, AutoAction.SQUARE_AND_SHOOT, AutoAction.DRIVE, AutoAction.ARM};
-  int[] middleValues = {-50, 0, -30, -100}; //need to change these values
+  AutoAction[] autoMiddle = {AutoAction.DRIVE, AutoAction.SQUARE, AutoAction.AIM, AutoAction.SHOOT, AutoAction.DRIVE, AutoAction.AIM};
+  int[] middleValues = {-50, 0, 100, 0 -30, -100}; //need to change these values
 
   //start right -- need to edit
-  AutoAction[] autoRight = {AutoAction.DRIVE, AutoAction.TURN, AutoAction.DRIVE, AutoAction.TURN, AutoAction.SQUARE_AND_SHOOT, AutoAction.DRIVE, AutoAction.ARM};
-  int[] rightValues = { -50, -90, 25, 90, 0, -30, -100}; //need to change these values
+  AutoAction[] autoRight = {AutoAction.DRIVE, AutoAction.TURN, AutoAction.DRIVE, AutoAction.TURN, AutoAction.SQUARE, AutoAction.AIM, AutoAction.SHOOT, AutoAction.DRIVE, AutoAction.AIM};
+  int[] rightValues = { -50, -90, 25, 90, 0, 100, 0, -30, -100}; //need to change these values
 
   //start left -- need to edit
-  AutoAction[] autoLeft = {AutoAction.DRIVE, AutoAction.TURN, AutoAction.DRIVE, AutoAction.TURN, AutoAction.SQUARE_AND_SHOOT, AutoAction.DRIVE, AutoAction.ARM};
-  int[] leftValues = { -50, 90, 25, -90, 0, -30, -100}; //need to change these values
+  AutoAction[] autoLeft = {AutoAction.DRIVE, AutoAction.TURN, AutoAction.DRIVE, AutoAction.TURN, AutoAction.SQUARE, AutoAction.AIM, AutoAction.SHOOT, AutoAction.DRIVE, AutoAction.AIM};
+  int[] leftValues = { -50, 90, 25, -90, 0, 0, -30, -100}; //need to change these values
 
   //tesitng sequence -- need to edit
-  AutoAction[] autoTest= {AutoAction.DRIVE, AutoAction.DRIVE, AutoAction.ARM,AutoAction.ARM};
+  AutoAction[] autoTest= {AutoAction.DRIVE, AutoAction.DRIVE, AutoAction.AIM,AutoAction.AIM};
   int[] testValues = { 20, -20, 100, -100}; //need to change these values
 
   /**
@@ -196,16 +196,49 @@ public class Robot extends TimedRobot {
     // behavior for each possible auto action
     /*if (currentAction == AutoAction.TURN) {
       driveTrain.gyroTurn()
-    } */
+      if (driveTrain.turnComplete()) {
+        goToNextState();
+      }
+    } else if (currentAction == AutoAction.DRIVE) {
+      driveTrain.autoDrive();
+      if (driveTrain.driveComplete()) {
+        goToNextState();
+      }
+    } else if (currentAction == AutoAction.SQUARE) {
+      driveTrain.square();
+      if (driveTrain.squareComplete()) {
+        goToNextState();
+      }
+    } else if (currentAction == AutoAction.AIM) {
+      arm.aim();
+      if (arm.aimComplete()) {
+        goToNextState();
+      }
+    }
+    */
   }
 
   /** This function is called once when teleop is enabled. */
   @Override
-  public void teleopInit() {}
+  public void teleopInit() {
+    //set brake??
+  }
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    if (DriveTrain.driveController.getAButton()) {
+      driveTrain.square();
+      //if driveTrain.squareComplete() {
+        //arm.aimThenShoot();
+      //}
+    } else {
+      driveTrain.drive(0.5, 0.25, false);
+      driveTrain.setTeleop(); // switches between brake and cost when you press x button
+    }
+
+    //arm.armSpeed(0.6);
+  }
 
   /** This function is called once when the robot is disabled. */
   @Override

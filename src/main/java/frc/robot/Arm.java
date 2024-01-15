@@ -35,5 +35,5 @@ public class Arm {
 
 //mech will decide locking mechanism so arm can stop at multiple angles
 
-// add break
+//add brake
 }

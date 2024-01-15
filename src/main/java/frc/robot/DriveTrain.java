@@ -210,4 +210,23 @@ public class DriveTrain {
             robotDrive.driveCartesian(-speed, 0, 0);
         }
     }
+
+    public void square() {
+      frontLeft.setIdleMode(IdleMode.kBrake);
+      backLeft.setIdleMode(IdleMode.kBrake);
+      frontRight.setIdleMode(IdleMode.kBrake);
+      backRight.setIdleMode(IdleMode.kBrake);
+
+      /*if (gyroDifference < 0) {
+        gyroDifference += 360;
+      }
+      
+
+
+     */
+    }
+
+    public void squareComplete() {
+
+    }
 }
