@@ -6,7 +6,7 @@ import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-public class Intake {
+public class Arm {
     public Limelight limelight;
 
     double targetOffsetAngle_Vertical = limelight.ty.getDouble(0.0);
@@ -34,4 +34,6 @@ public class Intake {
 // 
 
 //mech will decide locking mechanism so arm can stop at multiple angles
+
+// add break
 }

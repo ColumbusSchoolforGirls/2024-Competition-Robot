@@ -15,10 +15,53 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * project.
  */
 public class Robot extends TimedRobot {
-  private static final String kDefaultAuto = "Default";
-  private static final String kCustomAuto = "My Auto";
+
+  //our different files
+  public DriveTrain driveTrain;
+  public Limelight limelight;
+  public Arm arm;
+  
+  // possible auto actions
+  enum AutoAction {
+    DRIVE, ARM, SHOOT, TURN, SQUARE_AND_SHOOT
+  };
+
+  // dashboard key for each auto path
+  private static final String kAutoDefault = "Default";
+  private static final String kAutoPathMiddle = "Middle";
+  private static final String kAutoPathRight = "Right";
+  private static final String kAutoPathLeft = "Left";
+  private static final String kAutoPathTest = "Testing Sequence";
   private String m_autoSelected;
+
+  //the drop down menu to choose a path on the dashboard
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
+
+  int state; //state for state machine
+
+  //place holders for chosen path
+  AutoAction[] autoActions = {};
+  int[] autoValues = {};
+
+  //default
+  AutoAction[] autoDefault= {};
+  int[] defaultValues = {};
+
+  //start middle -- probably need to make more paths, just a template -- need to edit
+  AutoAction[] autoMiddle = {AutoAction.DRIVE, AutoAction.SQUARE_AND_SHOOT, AutoAction.DRIVE, AutoAction.ARM};
+  int[] middleValues = {-50, 0, -30, -100}; //need to change these values
+
+  //start right -- need to edit
+  AutoAction[] autoRight = {AutoAction.DRIVE, AutoAction.TURN, AutoAction.DRIVE, AutoAction.TURN, AutoAction.SQUARE_AND_SHOOT, AutoAction.DRIVE, AutoAction.ARM};
+  int[] rightValues = { -50, -90, 25, 90, 0, -30, -100}; //need to change these values
+
+  //start left -- need to edit
+  AutoAction[] autoLeft = {AutoAction.DRIVE, AutoAction.TURN, AutoAction.DRIVE, AutoAction.TURN, AutoAction.SQUARE_AND_SHOOT, AutoAction.DRIVE, AutoAction.ARM};
+  int[] leftValues = { -50, 90, 25, -90, 0, -30, -100}; //need to change these values
+
+  //tesitng sequence -- need to edit
+  AutoAction[] autoTest= {AutoAction.DRIVE, AutoAction.DRIVE, AutoAction.ARM,AutoAction.ARM};
+  int[] testValues = { 20, -20, 100, -100}; //need to change these values
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -26,9 +69,18 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    m_chooser.addOption("My Auto", kCustomAuto);
-    SmartDashboard.putData("Auto choices", m_chooser);
+    driveTrain = new DriveTrain(); // PS this rests encoders at initialization
+    limelight = new Limelight(driveTrain);
+    arm = new Arm(); 
+
+    //autopath options for dashboard
+    m_chooser.setDefaultOption(kAutoDefault, kAutoDefault);
+    m_chooser.addOption(kAutoPathMiddle, kAutoPathMiddle);
+    m_chooser.addOption(kAutoPathRight, kAutoPathRight);
+    m_chooser.addOption(kAutoPathLeft, kAutoPathLeft);
+    m_chooser.addOption(kAutoPathTest, kAutoPathTest);
+
+    SmartDashboard.putData("Auto choices", m_chooser); //actually puts them on the dashboard after they are added to m_chooser
   }
 
   /**
@@ -39,7 +91,12 @@ public class Robot extends TimedRobot {
    * SmartDashboard integrated updating.
    */
   @Override
-  public void robotPeriodic() {}
+  public void robotPeriodic() {
+
+    //updating smartdashboard values
+    driveTrain.update();
+    //will need to add gyro
+  }
 
   /**
    * This autonomous (along with the chooser code above) shows how to select between different
@@ -53,15 +110,69 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
+    //set arm brake
+    //reset gyro
+    driveTrain.resetEncoders();
+
+    //assigns selected auto path into placeholder variables
+    if (m_chooser.getSelected() == kAutoPathMiddle) {
+      autoActions = autoMiddle;
+      autoValues = middleValues;
+    } else if (m_chooser.getSelected() == kAutoPathRight) {
+      autoActions = autoRight;
+      autoValues = rightValues;
+    } else if (m_chooser.getSelected() == kAutoPathLeft) {
+      autoActions = autoLeft;
+      autoValues = leftValues;
+    } else if (m_chooser.getSelected() == kAutoPathTest) {
+      autoActions = autoTest;
+      autoValues = testValues;
+    } else { //default
+      autoActions = autoDefault;
+      autoValues = defaultValues;
+    }
+
+    //print selected auto path
     m_autoSelected = m_chooser.getSelected();
-    // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
-    System.out.println("Auto selected: " + m_autoSelected);
+    System.out.println("Auto selected: " + m_chooser.getSelected());
+    driveTrain.setAuto(); // sets drivetrain to break mode
+    //reset arm encoders
+    // set state to -1 (so that it moves to 0 when it starts)
+    state = -1;
+    goToNextState(); // runs intital/setup code for upcoming state (in this case the first one), and moves into it
+
+  }
+
+  public void goToNextState() {
+    //moves into next state
+    state++;
+    // if at the end of the path, end
+    if (state >= autoActions.length) {
+      return;
+    }
+  
+
+  //make a stop arm function maybe
+
+  // sets current action/distance vlaues based on whatever state we're in
+  AutoAction currentAction = autoActions[state];
+  int currentValue = autoValues[state];
+
+  // sets target angle/initial values/setup for the auto actions that need it
+  /* if (currentAction == AutoAction.TURN) {
+    driveTrain.startTurn(currentValue);
+  } else if (currentAction == AutoAction.DRIVE) { 
+    driveTrain.startDrive(currentValue);
+  } else if (currentAction == AutoAction.ARM) {
+    arm.startArm(currentValue);
+  } 
+  */
   }
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    switch (m_autoSelected) {
+    /*switch (m_autoSelected) {
       case kCustomAuto:
         // Put custom auto code here
         break;
@@ -69,7 +180,23 @@ public class Robot extends TimedRobot {
       default:
         // Put default auto code here
         break;
+    } */
+
+    SmartDashboard.putNumber("Current State", state);
+
+    // stop robot and finish if at end of auto path
+    if (state >= autoActions.length) {
+      driveTrain.robotDrive.driveCartesian(0, 0 , 0);
+      return;
     }
+
+    //set current action to correct step of auto path
+    AutoAction currentAction = autoActions[state];
+
+    // behavior for each possible auto action
+    /*if (currentAction == AutoAction.TURN) {
+      driveTrain.gyroTurn()
+    } */
   }
 
   /** This function is called once when teleop is enabled. */

@@ -1,5 +1,6 @@
 package frc.robot;
 
+//import gyro
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -142,7 +143,71 @@ public class DriveTrain {
         robotDrive.driveCartesian(forwardSpeed, sideSpeed, rotationSpeed);
     }
 
-    public void autoDrive() { //will do later
+    private double targetAngle;
+    private double targetDistance;
+    private double difference;
+    private double driveDifference;
 
+    //add gyro
+
+    public void auotUpdate() {
+        //SmartDashboard.putNumber("GyroAngle Turn", getFacingAngle)
+    }
+
+    /**public double getFacingAngle() {
+        return gyro.getAngle();
+    } **/
+
+    /**public boolean turnComplete() {
+        difference = (getFacingAngle() - targetAngle);
+        if (difference < Constants.TURN_TOLERANCE && difference > -Constants.TURN_TOLERANCE) {
+            return true;
+        }
+        return false;
+    } **/
+
+    public boolean driveComplete() {
+        driveDifference = targetDistance = getFrontLeftEncoder();
+        if (Math.abs(driveDifference) < Constants.DISTANCE_TOLERANCE) {
+            return true;
+        }
+        return false;
+    }
+
+    /*public void startTurn(double angle) {
+        this.targetAngle = (angle + getFacingAngle());
+    } */
+
+    /*public void resetGyro() {
+        gyro.reset();
+    }*/
+
+    /*public void gyroTurn() {
+        double rotationSpeed = 0;
+        difference = (getFacingANgle() - targetAngle);
+
+        if (difference < Constants.TURN_TOLERANCE && difference > -Constants.TURN_TOLERANCE) {
+            roationSpeed = 0;
+        } else if (difference < 0) {
+            rotationSpeed = 0.005 * Math.abs(difference) + 0.05;
+        } else if (difference > 0) {
+            rotationSpeed = -0.005 * Math.abs(difference) - 0.05;
+        }
+        robotDrive.driveCartesian(0, 0, rotationSpeed);
+    } */
+    
+    public void autoDrive() {
+        driveDifference = targetDistance - getFrontLeftEncoder();
+        double speed = 0.5; //will likely change
+
+        if (Math.abs(getFrontLeftEncoder()) < 10) {
+            speed = 0.2;
+        }
+
+        if (driveDifference > 0) {
+            robotDrive.driveCartesian(speed, 0, 0);
+        } else if (driveDifference < 0) {
+            robotDrive.driveCartesian(-speed, 0, 0);
+        }
     }
 }
