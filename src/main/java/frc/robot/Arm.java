@@ -2,6 +2,7 @@ package frc.robot;
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -23,6 +24,30 @@ public class Arm {
     double distanceFromLimelightToGoal = (goalHeight - limelightLensHeight) / Math.tan(angleToGoalRadians);
     //calculates distance
     double groundDistanceToSpeaker = Math.sqrt(Math.pow(distanceFromLimelightToGoal, 2) - Math.pow(distanceFromGroundToAprilTag, 2));
+
+//testing neos
+    public CANSparkMax shootMotor= new CANSparkMax(2, MotorType.kBrushless);
+    //public CANSparkMax holdDrum = new CANSparkMax(3, MotorType.kBrushless);
+    public CANSparkMax intakeMotor = new CANSparkMax(4, MotorType.kBrushless);
+
+    public static XboxController aux = new XboxController(1); // 1 is the zux controller
+
+    public void armFunctions(double normalShootSpeed, double normalIntakeSpeed) {
+        double shootSpeed = -aux.getLeftY();
+        double intakeSpeed = aux.getRightY();
+
+        if (Math.abs(intakeSpeed) < Constants.AUX_DEADZONE){
+            intakeMotor.set(0);
+        } else{
+            intakeMotor.set(intakeSpeed * normalIntakeSpeed);
+         }
+
+        if (Math.abs(shootSpeed) < Constants.AUX_DEADZONE){
+            shootMotor.set(0);
+        } else{
+            shootMotor.set(shootSpeed * normalShootSpeed);
+         }
+    }
 
 //default intake (arm down)
 //1 motor to drive arm up

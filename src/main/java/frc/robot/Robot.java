@@ -238,6 +238,7 @@ public class Robot extends TimedRobot {
     }
 
     //arm.armSpeed(0.6);
+    arm.armFunctions(0.5, 0.5);
   }
 
   /** This function is called once when the robot is disabled. */
