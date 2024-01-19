@@ -1,16 +1,19 @@
 package frc.robot;
 
-//import gyro
+import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class DriveTrain {
+
+    public Limelight limelight;
     
     boolean brakeMode = true;
     public CANSparkMax frontLeft = new CANSparkMax(1, MotorType.kBrushless); 
@@ -30,6 +33,7 @@ public class DriveTrain {
     public RelativeEncoder backLeftEncoder = backLeft.getEncoder();
     public RelativeEncoder frontRightEncoder = frontRight.getEncoder();
     public RelativeEncoder backRightEncoder = backRight.getEncoder();
+    public double gyroDifference;
 
     public DriveTrain() {
         resetEncoders();
@@ -148,23 +152,29 @@ public class DriveTrain {
     private double difference;
     private double driveDifference;
 
-    //add gyro
+    AHRS gyro = new AHRS(SPI.Port.kMXP);
 
-    public void auotUpdate() {
-        //SmartDashboard.putNumber("GyroAngle Turn", getFacingAngle)
+
+    public void auTotUpdate() {
+        SmartDashboard.putNumber("GyroAngle Turn", getFacingAngle());
+        
     }
 
-    /**public double getFacingAngle() {
+    public double getFacingAngle(){
         return gyro.getAngle();
-    } **/
+    }
 
-    /**public boolean turnComplete() {
+    public double getFacingAngle() {
+        return gyro.getAngle();
+    } 
+
+    public boolean turnComplete() {
         difference = (getFacingAngle() - targetAngle);
         if (difference < Constants.TURN_TOLERANCE && difference > -Constants.TURN_TOLERANCE) {
             return true;
         }
         return false;
-    } **/
+    } 
 
     public boolean driveComplete() {
         driveDifference = targetDistance = getFrontLeftEncoder();
@@ -174,27 +184,27 @@ public class DriveTrain {
         return false;
     }
 
-    /*public void startTurn(double angle) {
+    public void startTurn(double angle) {
         this.targetAngle = (angle + getFacingAngle());
-    } */
+    }
 
-    /*public void resetGyro() {
+    public void resetGyro() {
         gyro.reset();
-    }*/
+    }
 
-    /*public void gyroTurn() {
+    public void gyroTurn() {
         double rotationSpeed = 0;
-        difference = (getFacingANgle() - targetAngle);
+        difference = (getFacingAngle() - targetAngle);
 
         if (difference < Constants.TURN_TOLERANCE && difference > -Constants.TURN_TOLERANCE) {
-            roationSpeed = 0;
+            limelight.rotationSpeed = 0;
         } else if (difference < 0) {
             rotationSpeed = 0.005 * Math.abs(difference) + 0.05;
         } else if (difference > 0) {
             rotationSpeed = -0.005 * Math.abs(difference) - 0.05;
         }
         robotDrive.driveCartesian(0, 0, rotationSpeed);
-    } */
+    }
     
     public void autoDrive() {
         driveDifference = targetDistance - getFrontLeftEncoder();
@@ -217,16 +227,31 @@ public class DriveTrain {
       frontRight.setIdleMode(IdleMode.kBrake);
       backRight.setIdleMode(IdleMode.kBrake);
 
-      /*if (gyroDifference < 0) {
+      gyroDifference = Robot.gyroAngle % 360;
+      if (gyroDifference < 0) {
         gyroDifference += 360;
       }
       
+      if (gyroDifference < Constants.SQUARE_TOLERANCE || gyroDifference > 360 - Constants.SQUARE_TOLERANCE) {
+            robotDrive.driveCartesian(0, 0, 0);
+        } else {
+            if (gyroDifference > 180) {
+                if (gyroDifference > 345) {
+                    robotDrive.driveCartesian(0, 0, 0.070);
+                } else {
+                    robotDrive.driveCartesian(0, 0, 0.2);
+                }
+            }
+        }
 
-
-     */
     }
 
-    public void squareComplete() {
-
+    public boolean squareComplete() {
+        if(Math.abs(Robot.gyroAngle) < Constants.TURN_TOLERANCE) {
+            return true;
+        }
+        return false;
     }
+     
+
 }

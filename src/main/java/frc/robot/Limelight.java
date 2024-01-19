@@ -64,4 +64,6 @@ public class Limelight {
     double distanceFromLimelightToGoal = (goalHeight -limelightLensHeight) / Math.tan(angleToGoalRadians);
     //calculate distance
 
+    //double shooterAngle = something where distanceFromLimelightToGoal is the independent variable
+
 }
