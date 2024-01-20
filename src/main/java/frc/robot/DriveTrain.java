@@ -155,7 +155,7 @@ public class DriveTrain {
     AHRS gyro = new AHRS(SPI.Port.kMXP);
 
 
-    public void auTotUpdate() {
+    public void autoUpdate() {
         SmartDashboard.putNumber("GyroAngle Turn", getFacingAngle());
         
     }
@@ -163,10 +163,6 @@ public class DriveTrain {
     public double getFacingAngle(){
         return gyro.getAngle();
     }
-
-    public double getFacingAngle() {
-        return gyro.getAngle();
-    } 
 
     public boolean turnComplete() {
         difference = (getFacingAngle() - targetAngle);
@@ -190,6 +186,11 @@ public class DriveTrain {
 
     public void resetGyro() {
         gyro.reset();
+    }
+
+    public void startDrive(double distanceInches) {
+        resetEncoders();
+        targetDistance = distanceInches;
     }
 
     public void gyroTurn() {
@@ -221,13 +222,13 @@ public class DriveTrain {
         }
     }
 
-    public void square() {
+    public void square() { // turn robot to 0... straight assuming the robot is lined up with the goal to start
       frontLeft.setIdleMode(IdleMode.kBrake);
       backLeft.setIdleMode(IdleMode.kBrake);
       frontRight.setIdleMode(IdleMode.kBrake);
       backRight.setIdleMode(IdleMode.kBrake);
 
-      gyroDifference = Robot.gyroAngle % 360;
+      gyroDifference = Robot.gyroAngle % 360; //divides over and over again until there is a remainder
       if (gyroDifference < 0) {
         gyroDifference += 360;
       }
@@ -240,6 +241,12 @@ public class DriveTrain {
                     robotDrive.driveCartesian(0, 0, 0.070);
                 } else {
                     robotDrive.driveCartesian(0, 0, 0.2);
+                }
+            } else if (gyroDifference < 180) {
+                if (gyroDifference < 15) {
+                    robotDrive.driveCartesian(0, 0, -0.070);
+                } else {
+                    robotDrive.driveCartesian(0,0, -0.2);
                 }
             }
         }

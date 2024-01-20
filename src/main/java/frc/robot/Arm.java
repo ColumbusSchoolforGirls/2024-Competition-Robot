@@ -12,7 +12,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Arm {
     public Limelight limelight;
 
-    double targetOffsetAngle_Vertical = limelight.ty.getDouble(0.0);
+    //limelight stuff to calculate distance with april tags
+    double targetOffsetAngle_Vertical = limelight.ty.getDouble(0.0); //getting the vertical angle that the limelight is off from the april tag
     double limelightMountAngleDegrees = 45.0; //will need to change
     double limelightLensHeight = 6.0; //in inches -- will need to change
     //distance from center of the limelight lens tot he floor
@@ -20,12 +21,12 @@ public class Arm {
     //this is for the speaker
     double angleToGoalDegrees = limelightMountAngleDegrees + targetOffsetAngle_Vertical;
     double angleToGoalRadians = angleToGoalDegrees * (3.14159 / 180.0);
-
-    double distanceFromGroundToAprilTag = 57.125;
-
+    double distanceFromAprilTagToSpeaker = 57.125;
     double distanceFromLimelightToGoal = (goalHeight - limelightLensHeight) / Math.tan(angleToGoalRadians);
     //calculates distance
-    double groundDistanceToSpeaker = Math.sqrt(Math.pow(distanceFromLimelightToGoal, 2) - Math.pow(distanceFromGroundToAprilTag, 2));
+    double groundDistanceToSpeaker = Math.sqrt(Math.pow(distanceFromLimelightToGoal, 2) - Math.pow(distanceFromAprilTagToSpeaker, 2));
+
+    //double shooterAngle = something where distanceFromLimelightToGoal is the independent variable
 
 //testing neos
     public CANSparkMax shootMotor= new CANSparkMax(2, MotorType.kBrushless);

@@ -20,6 +20,8 @@ public class Robot extends TimedRobot {
   public DriveTrain driveTrain;
   public Limelight limelight;
   public Arm arm;
+  public static double gyroAngle;
+  //set arm brake?
   
   // possible auto actions
   enum AutoAction {
@@ -60,8 +62,8 @@ public class Robot extends TimedRobot {
   int[] leftValues = { -50, 90, 25, -90, 0, 0, -30, -100}; //need to change these values
 
   //tesitng sequence -- need to edit
-  AutoAction[] autoTest= {AutoAction.DRIVE, AutoAction.DRIVE, AutoAction.AIM,AutoAction.AIM};
-  int[] testValues = { 20, -20, 100, -100}; //need to change these values
+  AutoAction[] autoTest= {AutoAction.DRIVE, AutoAction.DRIVE, AutoAction.AIM, AutoAction.SHOOT, AutoAction.AIM};
+  int[] testValues = { 20, -20, 100, 0, -100}; //need to change these values
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -95,7 +97,7 @@ public class Robot extends TimedRobot {
 
     //updating smartdashboard values
     driveTrain.update();
-    //will need to add gyro
+    gyroAngle = driveTrain.getFacingAngle();
   }
 
   /**
@@ -111,7 +113,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     //set arm brake
-    //reset gyro
+    driveTrain.resetGyro();
     driveTrain.resetEncoders();
 
     //assigns selected auto path into placeholder variables
@@ -159,20 +161,19 @@ public class Robot extends TimedRobot {
   int currentValue = autoValues[state];
 
   // sets target angle/initial values/setup for the auto actions that need it
-  /* if (currentAction == AutoAction.TURN) {
+  if (currentAction == AutoAction.TURN) {
     driveTrain.startTurn(currentValue);
   } else if (currentAction == AutoAction.DRIVE) { 
     driveTrain.startDrive(currentValue);
-  } else if (currentAction == AutoAction.ARM) {
+  } /* else if (currentAction == AutoAction.ARM) {
     arm.startArm(currentValue);
-  } 
-  */
+  } */
   }
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    /*switch (m_autoSelected) {
+    /* switch (m_autoSelected) {
       case kCustomAuto:
         // Put custom auto code here
         break;
@@ -194,8 +195,8 @@ public class Robot extends TimedRobot {
     AutoAction currentAction = autoActions[state];
 
     // behavior for each possible auto action
-    /*if (currentAction == AutoAction.TURN) {
-      driveTrain.gyroTurn()
+    if (currentAction == AutoAction.TURN) {
+      driveTrain.gyroTurn();
       if (driveTrain.turnComplete()) {
         goToNextState();
       }
@@ -209,13 +210,12 @@ public class Robot extends TimedRobot {
       if (driveTrain.squareComplete()) {
         goToNextState();
       }
-    } else if (currentAction == AutoAction.AIM) {
+    } /* else if (currentAction == AutoAction.AIM) {
       arm.aim();
       if (arm.aimComplete()) {
         goToNextState();
-      }
-    }
-    */
+      } 
+    }*/
   }
 
   /** This function is called once when teleop is enabled. */
@@ -230,14 +230,16 @@ public class Robot extends TimedRobot {
     if (DriveTrain.driveController.getAButton()) {
       driveTrain.square();
       //if driveTrain.squareComplete() {
-        //arm.aimThenShoot();
+        //arm.aim();
       //}
+      /*if arm.aimComplete() {
+        arm.shoot();
+      } */
     } else {
       driveTrain.drive(0.5, 0.25, false);
-      driveTrain.setTeleop(); // switches between brake and cost when you press x button
+      driveTrain.setTeleop(); // switches between brake and coast when you press x button
     }
 
-    //arm.armSpeed(0.6);
     arm.armFunctions(0.5, 0.5);
   }
 
