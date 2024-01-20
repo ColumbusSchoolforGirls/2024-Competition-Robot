@@ -16,11 +16,11 @@ public class DriveTrain {
     public Limelight limelight;
     
     boolean brakeMode = true;
-    public CANSparkMax frontLeft = new CANSparkMax(1, MotorType.kBrushless); 
+    public CANSparkMax frontLeft = new CANSparkMax(3, MotorType.kBrushless); 
     //fake id -- need to change when we have a real chassi
     public CANSparkMax backLeft = new CANSparkMax(2, MotorType.kBrushless);
     //fake id -- need to change when we have a real chassi
-    public CANSparkMax frontRight = new CANSparkMax(3, MotorType.kBrushless);
+    public CANSparkMax frontRight = new CANSparkMax(5, MotorType.kBrushless);
     //fake id -- need to change when we have a real chassi
     public CANSparkMax backRight = new CANSparkMax(4, MotorType.kBrushless);
     //fake id -- need to change when we have a real chassi
@@ -35,7 +35,9 @@ public class DriveTrain {
     public RelativeEncoder backRightEncoder = backRight.getEncoder();
     public double gyroDifference;
 
-    public DriveTrain() {
+    public DriveTrain(Limelight limelight) {
+        this.limelight = limelight;
+
         resetEncoders();
         frontRight.setInverted(true); //need to change inversions with testing
         backRight.setInverted(true);
@@ -99,32 +101,33 @@ public class DriveTrain {
             backRight.setIdleMode(IdleMode.kBrake);
             SmartDashboard.putBoolean("Brake Mode", true); //green box if it is in brake mode
         } else {
-            frontLeft.setIdleMode(IdleMode.kBrake);
-            backLeft.setIdleMode(IdleMode.kBrake);
-            frontRight.setIdleMode(IdleMode.kBrake);
-            backRight.setIdleMode(IdleMode.kBrake);
+            frontLeft.setIdleMode(IdleMode.kCoast);
+            backLeft.setIdleMode(IdleMode.kCoast);
+            frontRight.setIdleMode(IdleMode.kCoast);
+            backRight.setIdleMode(IdleMode.kCoast);
             SmartDashboard.putBoolean("Brake Mode", false); //red box if it is in coast mode
         }
 
         if (driveController.getXButtonPressed()) {
             brakeMode = !brakeMode; //this looks odd and is confusin but it works :>
+
         }
     }
 
     public void drive(double normalSpeed, double crawlSpeed, boolean noDeadZone) { //scaling
 
-        double forwardSpeed = driveController.getLeftY();
+        double forwardSpeed = -driveController.getLeftY();
         double sideSpeed = driveController.getLeftX();
         double rotationSpeed = driveController.getRightX();
 
         if (!driveController.getRightBumper()) { //so basically if you are clicking the right bumper, you go at full speed (-100% to 100%)
-            forwardSpeed = driveController.getLeftY() * normalSpeed; //if you aren't clicking any bumper, you go "normal speed" (-50% to 50%)
+            forwardSpeed = -driveController.getLeftY() * normalSpeed; //if you aren't clicking any bumper, you go "normal speed" (-50% to 50%)
             sideSpeed = driveController.getLeftX() * normalSpeed; //LOWERED SPEEDS IN ROBOT
             rotationSpeed = driveController.getRightX() * normalSpeed;
         }
 
         if (driveController.getLeftBumper()) {
-            forwardSpeed = driveController.getLeftY() * crawlSpeed; //if you click the left bumper you go at a slow scaled speed
+            forwardSpeed = -driveController.getLeftY() * crawlSpeed; //if you click the left bumper you go at a slow scaled speed
             sideSpeed = driveController.getLeftX() * crawlSpeed;
             rotationSpeed = driveController.getRightX() * crawlSpeed;
         }

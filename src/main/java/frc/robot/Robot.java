@@ -71,9 +71,9 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    driveTrain = new DriveTrain(); // PS this rests encoders at initialization
     limelight = new Limelight(driveTrain);
-    arm = new Arm(); 
+    driveTrain = new DriveTrain(limelight); // PS this rests encoders at initialization
+    //arm = new Arm(); 
 
     //autopath options for dashboard
     m_chooser.setDefaultOption(kAutoDefault, kAutoDefault);
@@ -240,7 +240,7 @@ public class Robot extends TimedRobot {
       driveTrain.setTeleop(); // switches between brake and coast when you press x button
     }
 
-    arm.armFunctions(0.5, 0.5);
+    //arm.armFunctions(0.5, 0.5);
   }
 
   /** This function is called once when the robot is disabled. */
