@@ -73,7 +73,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     limelight = new Limelight(driveTrain);
     driveTrain = new DriveTrain(limelight); // PS this rests encoders at initialization
-    //arm = new Arm(); 
+    arm = new Arm(limelight); 
 
     //autopath options for dashboard
     m_chooser.setDefaultOption(kAutoDefault, kAutoDefault);

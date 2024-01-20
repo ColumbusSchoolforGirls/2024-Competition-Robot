@@ -12,6 +12,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Arm {
     public Limelight limelight;
 
+    public Arm (Limelight limelight) {
+    this.limelight = limelight;
+
     //limelight stuff to calculate distance with april tags
     double targetOffsetAngle_Vertical = limelight.ty.getDouble(0.0); //getting the vertical angle that the limelight is off from the april tag
     double limelightMountAngleDegrees = 45.0; //will need to change
@@ -25,16 +28,17 @@ public class Arm {
     double distanceFromLimelightToGoal = (goalHeight - limelightLensHeight) / Math.tan(angleToGoalRadians);
     //calculates distance
     double groundDistanceToSpeaker = Math.sqrt(Math.pow(distanceFromLimelightToGoal, 2) - Math.pow(distanceFromAprilTagToSpeaker, 2));
-
     //double shooterAngle = something where distanceFromLimelightToGoal is the independent variable
-
+    System.out.println("Distance on ground from limelight to april tag:" + groundDistanceToSpeaker);
+    }
 //testing neos
     public CANSparkMax shootMotor= new CANSparkMax(2, MotorType.kBrushless);
     //public CANSparkMax holdDrum = new CANSparkMax(3, MotorType.kBrushless);
     public CANSparkMax intakeMotor = new CANSparkMax(4, MotorType.kBrushless);
 
     public static XboxController aux = new XboxController(1); // 1 is the zux controller
-
+    
+    
     public void armFunctions(double normalShootSpeed, double normalIntakeSpeed) {
         double shootSpeed = -aux.getLeftY();
         double intakeSpeed = aux.getRightY();
