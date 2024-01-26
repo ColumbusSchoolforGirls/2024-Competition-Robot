@@ -49,8 +49,9 @@ public class Arm {
             shootMotor.set(0);
         } else{
             shootMotor.set(shootSpeed * normalShootSpeed);
-         }
+         }   
     }
+
 
 //color sensor
     private final I2C.Port i2cPort = I2C.Port.kOnboard;
