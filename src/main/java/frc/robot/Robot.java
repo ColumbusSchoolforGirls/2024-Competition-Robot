@@ -98,6 +98,7 @@ public class Robot extends TimedRobot {
     //updating smartdashboard values
     driveTrain.update();
     gyroAngle = driveTrain.getFacingAngle();
+    
   }
 
   /**
@@ -240,7 +241,8 @@ public class Robot extends TimedRobot {
       driveTrain.setTeleop(); // switches between brake and coast when you press x button
     }
 
-    //arm.armFunctions(0.5, 0.5);
+    arm.armFunctions(1, 1);
+
   }
 
   /** This function is called once when the robot is disabled. */

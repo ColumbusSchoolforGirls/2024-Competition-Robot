@@ -95,10 +95,10 @@ public class DriveTrain {
 
     public void setTeleop() {
         if (brakeMode) {
-            frontLeft.setIdleMode(IdleMode.kBrake);
-            backLeft.setIdleMode(IdleMode.kBrake);
-            frontRight.setIdleMode(IdleMode.kBrake);
-            backRight.setIdleMode(IdleMode.kBrake);
+            frontLeft.setIdleMode(IdleMode.kCoast); //change
+            backLeft.setIdleMode(IdleMode.kCoast);
+            frontRight.setIdleMode(IdleMode.kCoast);
+            backRight.setIdleMode(IdleMode.kCoast);
             SmartDashboard.putBoolean("Brake Mode", true); //green box if it is in brake mode
         } else {
             frontLeft.setIdleMode(IdleMode.kCoast);
