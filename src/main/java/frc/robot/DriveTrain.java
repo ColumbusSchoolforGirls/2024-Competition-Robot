@@ -13,16 +13,27 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class DriveTrain {
 
+    // move to top of file - NC --> done 
+    private double targetAngle;
+    private double targetDistance;
+    private double difference;
+    private double driveDifference;
+
+    // also move this -NC --> done
+    AHRS gyro = new AHRS(SPI.Port.kMXP);
+
     public Limelight limelight;
-    
+
     boolean brakeMode = true;
-    public CANSparkMax frontLeft = new CANSparkMax(3, MotorType.kBrushless); 
+    
+    // move CAN IDs into a constants -NC --> done 
+    public CANSparkMax frontLeft = new CANSparkMax(Constants.FRONT_LEFT_ID, MotorType.kBrushless); 
     //fake id -- need to change when we have a real chassi
-    public CANSparkMax backLeft = new CANSparkMax(2, MotorType.kBrushless);
+    public CANSparkMax backLeft = new CANSparkMax(Constants.BACK_LEFT_ID, MotorType.kBrushless);
     //fake id -- need to change when we have a real chassi
-    public CANSparkMax frontRight = new CANSparkMax(5, MotorType.kBrushless);
+    public CANSparkMax frontRight = new CANSparkMax(Constants.FRONT_RIGHT_ID, MotorType.kBrushless);
     //fake id -- need to change when we have a real chassi
-    public CANSparkMax backRight = new CANSparkMax(4, MotorType.kBrushless);
+    public CANSparkMax backRight = new CANSparkMax(Constants.BACK_RIGHT_ID, MotorType.kBrushless);
     //fake id -- need to change when we have a real chassi
 
     public static XboxController driveController = new XboxController(0); 
@@ -53,22 +64,22 @@ public class DriveTrain {
     }
 
     public double getFrontLeftEncoder() {
-        return frontLeftEncoder.getPosition() / 12.75 * Constants.WHEEL_CIRCUMFERENCE;
+        return frontLeftEncoder.getPosition() / Constants.GEAR_RATIO * Constants.WHEEL_CIRCUMFERENCE;
         //might need to change gear ratio
     }
 
     public double getFrontRightEncoder() {
-        return frontRightEncoder.getPosition() / 12.75 * Constants.WHEEL_CIRCUMFERENCE;
+        return frontRightEncoder.getPosition() / Constants.GEAR_RATIO * Constants.WHEEL_CIRCUMFERENCE;
         //might need to change gear ratio
     }
 
     public double getBackLeftEncoder() {
-        return backLeftEncoder.getPosition() / 12.75 * Constants.WHEEL_CIRCUMFERENCE;
+        return backLeftEncoder.getPosition() / Constants.GEAR_RATIO * Constants.WHEEL_CIRCUMFERENCE;
         //might need to change gear ratio
     }
 
     public double getBackRightEncoder() {
-        return backRightEncoder.getPosition() / 12.75 * Constants.WHEEL_CIRCUMFERENCE;
+        return backRightEncoder.getPosition() / Constants.GEAR_RATIO * Constants.WHEEL_CIRCUMFERENCE;
         //might need to change gear ratio
     }
 
@@ -85,32 +96,36 @@ public class DriveTrain {
         SmartDashboard.putNumber("DriveTrain Back Right" , backRight.get());
         //for testing
     }
-
-    public void setAuto() { //brake mode for precision
+    private void setBrakeMode() {
         frontLeft.setIdleMode(IdleMode.kBrake);
         backLeft.setIdleMode(IdleMode.kBrake);
         frontRight.setIdleMode(IdleMode.kBrake);
         backRight.setIdleMode(IdleMode.kBrake);
+        SmartDashboard.putBoolean("Brake Mode", true); //green box if it is in brake mode
+    }
+
+    private void setCoastMode() {
+        frontLeft.setIdleMode(IdleMode.kCoast);
+        backLeft.setIdleMode(IdleMode.kCoast);
+        frontRight.setIdleMode(IdleMode.kCoast);
+        backRight.setIdleMode(IdleMode.kCoast);
+        SmartDashboard.putBoolean("Brake Mode", false); //red box if it is in coast mode
+    }
+
+    public void setAuto() { //brake mode for precision
+        setBrakeMode();
     }
 
     public void setTeleop() {
         if (brakeMode) {
-            frontLeft.setIdleMode(IdleMode.kBrake); //change
-            backLeft.setIdleMode(IdleMode.kBrake);
-            frontRight.setIdleMode(IdleMode.kBrake);
-            backRight.setIdleMode(IdleMode.kBrake);
-            SmartDashboard.putBoolean("Brake Mode", true); //green box if it is in brake mode
+            // make into function (call here and in setAuto) - NC --> done - YAY
+            setBrakeMode();
         } else {
-            frontLeft.setIdleMode(IdleMode.kCoast);
-            backLeft.setIdleMode(IdleMode.kCoast);
-            frontRight.setIdleMode(IdleMode.kCoast);
-            backRight.setIdleMode(IdleMode.kCoast);
-            SmartDashboard.putBoolean("Brake Mode", false); //red box if it is in coast mode
+            setCoastMode();
         }
 
         if (driveController.getXButtonPressed()) {
             brakeMode = !brakeMode; //this looks odd and is confusin but it works :>
-
         }
     }
 
@@ -137,7 +152,7 @@ public class DriveTrain {
         if (noDeadZone) { // dont want deadzone for auto aka boolean; true=don't use deadzone
             deadZone = 0;
         }
-        if (Math.abs(driveController.getLeftY()) < deadZone) { //in the future use a better variable (should be all caps and use tolerance) but we made this in the beginning of the season when -- again -- Lila had no idea what she was doing
+        if (Math.abs(driveController.getLeftY()) < deadZone) { 
             forwardSpeed = 0;
         }
         if (Math.abs(driveController.getLeftX()) < deadZone) {
@@ -150,18 +165,11 @@ public class DriveTrain {
         robotDrive.driveCartesian(forwardSpeed, sideSpeed, rotationSpeed);
     }
 
-    private double targetAngle;
-    private double targetDistance;
-    private double difference;
-    private double driveDifference;
 
-    AHRS gyro = new AHRS(SPI.Port.kMXP);
-
-
-    public void autoUpdate() {
+    /*public void autoUpdate() {
         SmartDashboard.putNumber("GyroAngle Turn", getFacingAngle());
-        
-    }
+        // why update this only in auto? - NC
+    } */ // not being called anywhere???
 
     public double getFacingAngle(){
         return gyro.getAngle();
@@ -169,6 +177,9 @@ public class DriveTrain {
 
     public boolean turnComplete() {
         difference = (getFacingAngle() - targetAngle);
+        
+        // return difference < Constants.TURN_TOLERANCE && difference > -Constants.TURN_TOLERANCE;
+        // but this is fine :) 
         if (difference < Constants.TURN_TOLERANCE && difference > -Constants.TURN_TOLERANCE) {
             return true;
         }
@@ -217,7 +228,7 @@ public class DriveTrain {
         driveDifference = targetDistance - getFrontLeftEncoder();
         double speed = 0.5; //will likely change
 
-        if (Math.abs(getFrontLeftEncoder()) < 10) {
+        if (Math.abs(getFrontLeftEncoder()) < Constants.SLOWING_DISTANCE) { // magic number >:( -NC
             speed = 0.2;
         }
 
@@ -238,18 +249,21 @@ public class DriveTrain {
             speed = -0.005 * Math.abs(driveDifference) - 0.05;
         }
         robotDrive.driveCartesian(speed, 0, 0);*/
+        // remove printlines -NC
         System.out.println("ENCODER INCHES: " + getFrontLeftEncoder());
         System.out.println("DRIVE DIFFERENCE (DIST FROM TARGET): " + driveDifference);
 
     }
 
     public void square() { // turn robot to 0... straight assuming the robot is lined up with the goal to start
+      // call the setBrakeMode() - NC
       frontLeft.setIdleMode(IdleMode.kBrake);
       backLeft.setIdleMode(IdleMode.kBrake);
       frontRight.setIdleMode(IdleMode.kBrake);
       backRight.setIdleMode(IdleMode.kBrake);
 
       gyroDifference = Robot.gyroAngle % 360; //divides over and over again until there is a remainder
+                                              // well not really but what ever floats your boat :) -NC
       if (gyroDifference < 0) {
         gyroDifference += 360;
       }
@@ -274,12 +288,14 @@ public class DriveTrain {
 
     }
 
-    public boolean squareComplete() {
+    /*public boolean squareComplete() {
+        // I don't think this is correct. I think you need to do % 360 first so you get an angle
+        // between (-360, 360)
         if(Math.abs(Robot.gyroAngle) < Constants.TURN_TOLERANCE) {
             return true;
         }
         return false;
-    }
+    } */
      
 
 }
