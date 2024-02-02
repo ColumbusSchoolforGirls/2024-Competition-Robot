@@ -288,14 +288,14 @@ public class DriveTrain {
 
     }
 
-    /*public boolean squareComplete() {
-        // I don't think this is correct. I think you need to do % 360 first so you get an angle
+    public boolean squareComplete() {
+        // I don't think this is correct. I think you need to do % 360 first so you get an angle - NC --> done??
         // between (-360, 360)
-        if(Math.abs(Robot.gyroAngle) < Constants.TURN_TOLERANCE) {
+        if(Math.abs(Robot.gyroAngle % 360) < Constants.TURN_TOLERANCE) {
             return true;
         }
         return false;
-    } */
+    } 
      
 
 }
