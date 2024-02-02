@@ -95,10 +95,10 @@ public class DriveTrain {
 
     public void setTeleop() {
         if (brakeMode) {
-            frontLeft.setIdleMode(IdleMode.kCoast); //change
-            backLeft.setIdleMode(IdleMode.kCoast);
-            frontRight.setIdleMode(IdleMode.kCoast);
-            backRight.setIdleMode(IdleMode.kCoast);
+            frontLeft.setIdleMode(IdleMode.kBrake); //change
+            backLeft.setIdleMode(IdleMode.kBrake);
+            frontRight.setIdleMode(IdleMode.kBrake);
+            backRight.setIdleMode(IdleMode.kBrake);
             SmartDashboard.putBoolean("Brake Mode", true); //green box if it is in brake mode
         } else {
             frontLeft.setIdleMode(IdleMode.kCoast);
@@ -176,9 +176,12 @@ public class DriveTrain {
     } 
 
     public boolean driveComplete() {
-        driveDifference = targetDistance = getFrontLeftEncoder();
+        driveDifference = targetDistance - getFrontLeftEncoder();
         if (Math.abs(driveDifference) < Constants.DISTANCE_TOLERANCE) {
-            return true;
+            if(frontLeftEncoder.getVelocity() < 0.05){
+                return true;
+            } 
+
         }
         return false;
     }
@@ -218,11 +221,26 @@ public class DriveTrain {
             speed = 0.2;
         }
 
-        if (driveDifference > 0) {
+        if(driveDifference > Constants.DISTANCE_TOLERANCE) {
             robotDrive.driveCartesian(speed, 0, 0);
-        } else if (driveDifference < 0) {
+        } else if (driveDifference < -Constants.DISTANCE_TOLERANCE) {
             robotDrive.driveCartesian(-speed, 0, 0);
+        } else {
+            robotDrive.driveCartesian(0,0,0);
         }
+
+        /*if (driveDifference < Constants.DISTANCE_TOLERANCE && driveDifference > -Constants.DISTANCE_TOLERANCE) {
+            //limelight.rotationSpeed = 0;
+
+        } else if (driveDifference > 0 && Math.abs(getFrontLeftEncoder()) > 3) {
+            speed = 0.005 * Math.abs(driveDifference) + 0.05;
+        } else if (driveDifference < 0 && Math.abs(getFrontLeftEncoder()) > 3) {
+            speed = -0.005 * Math.abs(driveDifference) - 0.05;
+        }
+        robotDrive.driveCartesian(speed, 0, 0);*/
+        System.out.println("ENCODER INCHES: " + getFrontLeftEncoder());
+        System.out.println("DRIVE DIFFERENCE (DIST FROM TARGET): " + driveDifference);
+
     }
 
     public void square() { // turn robot to 0... straight assuming the robot is lined up with the goal to start

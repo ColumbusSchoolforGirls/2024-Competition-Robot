@@ -18,10 +18,10 @@ public class Arm {
 
     // testing neos
     public CANSparkMax shootMotor = new CANSparkMax(8, MotorType.kBrushless);
-    // public CANSparkMax holdDrum = new CANSparkMax(3, MotorType.kBrushless);
+    // public CANSparkMax holdMotor = new CANSparkMax(3, MotorType.kBrushless); //probably a talon
     public CANSparkMax intakeMotor = new CANSparkMax(9, MotorType.kBrushless);
 
-    public static XboxController aux = new XboxController(1); // 1 is the zux controller
+    public static XboxController aux = new XboxController(1); // 1 is the zux controller - oml "zux" can we rename aux to that
 
     public void armFunctions(double normalShootSpeed, double normalIntakeSpeed) {
         double shootSpeed = -aux.getLeftY();
@@ -49,21 +49,37 @@ public class Arm {
         double targetOffsetAngle_Vertical = limelight.ty.getDouble(0.0); // getting the vertical angle that the
                                                                          // limelight is off from the april tag
         double limelightMountAngleDegrees = -2; // will need to change
-        double limelightLensHeight = 52.25; // in inches -- will need to change
+        double limelightLensHeight = 6; // in inches -- will need to change
         // distance from center of the limelight lens to the floor
-        double goalHeight= 39.14; // might need to change // in inches //goal = april tag NOT speaker
+        double goalHeight= 24; // might need to change // in inches //goal = april tag NOT speaker
         // this is for the speaker
         double angleToGoalDegrees = limelightMountAngleDegrees + targetOffsetAngle_Vertical;
         double angleToGoalRadians = angleToGoalDegrees * (3.14159 / 180.0);
-        double distanceFromLimelightToGoal = (limelightLensHeight - goalHeight) / Math.tan(angleToGoalRadians); //will fl, WAS limelightLensHeight - goalHeight
+        double heightDistanceFromLimelightToAprilTag = goalHeight - limelightLensHeight;
+        double distanceFromLimelightToGoal = (heightDistanceFromLimelightToAprilTag) / Math.tan(angleToGoalRadians); //will fl, WAS limelightLensHeight - goalHeight
         // calculates distance
-        double groundDistanceToSrtpeaker = Math
-                .sqrt(Math.pow(distanceFromLimelightToGoal, 2) - Math.pow( limelightLensHeight - goalHeight  , 2));
+        double groundDistanceToSpeaker = Math.sqrt(Math.pow(distanceFromLimelightToGoal, 2) - Math.pow( heightDistanceFromLimelightToAprilTag , 2));
         // double shooterAngle = something where distanceFromLimelightToGoal is the
         // independent variable
+        System.out.println("Distance on ground from limelight to april tag:" + groundDistanceToSpeaker);
 
-        System.out.println("Distance on ground from limelight to april tag:" + groundDistanceToSrtpeaker);
+    }
 
+    public void intake() { //does auto need a different code
+        //if color sensor = ring then set(0) first?
+        if (aux.getAButtonPressed()) { //ADD && no ring in intake (colorsensor?)
+            intakeMotor.set(.2); // DO RPM
+            //holderMotor.set(0.01);
+        } else {
+            intakeMotor.set(0);
+            //holderMotor.set(0.01);
+            int setPoint;
+            //intakeMotor.setReference(setPoint, CANSparkMax.ControlType.kVelocity); //would be using pidcontroller
+        }
+    }
+    
+    public void shoot() {
+        
     }
 
     // color sensor

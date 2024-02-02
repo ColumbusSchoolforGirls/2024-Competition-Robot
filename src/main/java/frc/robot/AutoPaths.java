@@ -4,6 +4,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class AutoPaths{
 
+//ASHLEY QUESTIONS
+//make red/blue versions
+//see page 45 for measurements, 24 for zones
+
+
  public static AutoStep[] autoMiddleDriveAim = {
     new AutoStep(AutoAction.DRIVE, -50), 
     new AutoStep(AutoAction.DRIVE, -50),
@@ -38,11 +43,11 @@ public class AutoPaths{
 
   public static AutoStep[] autoTest = {
     //new AutoStep(AutoAction.DRIVE, 20),
-    new AutoStep(AutoAction.DRIVE, -20),
+    new AutoStep(AutoAction.DRIVE, -130),
     //new AutoStep(AutoAction.AIM, 100),
     //new AutoStep(AutoAction.SHOOT, 0),
     //new AutoStep(AutoAction.AIM, -100)
-    new AutoStep(AutoAction.TURN, 90),
+   // new AutoStep(AutoAction.TURN, 90),
   };
 
    public static AutoStep[] autoLeftShootLeave= {
