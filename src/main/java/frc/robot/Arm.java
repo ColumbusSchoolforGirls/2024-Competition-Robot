@@ -59,23 +59,31 @@ public class Arm {
         System.out.println(state.name());
         if (state == ArmAction.STOPPED) {
             holdMotor.set(0);
-            
+            m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
+            m_intakePidController.setReference(0, CANSparkMax.ControlType.kVelocity);
             if (aux.getAButtonPressed()) {
                 this.state = ArmAction.INTAKE;
             }
         } else if (state == ArmAction.INTAKE) {
-            //set intake motors
+            holdMotor.set(-0.5); //will probably change?
+            m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
+            m_intakePidController.setReference(-120, CANSparkMax.ControlType.kVelocity); //will change with testing
             if (aux.getAButtonPressed()) {
                 this.state = ArmAction.STOPPED;
             } else if (isNoteDetected()) { //color is detected
                 this.state = ArmAction.HOLD;
             }
         } else if (state == ArmAction.HOLD) {
-            //stop motors
+            holdMotor.set(0);
+            m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
+            m_intakePidController.setReference(0, CANSparkMax.ControlType.kVelocity);
             if (aux.getRightBumper()) {
                 this.state = ArmAction.REV_UP;
             }
         } else if (state == ArmAction.REV_UP) {
+            holdMotor.set(0);
+            m_shooterPidController.setReference(120, CANSparkMax.ControlType.kVelocity);
+            m_intakePidController.setReference(120, CANSparkMax.ControlType.kVelocity);
             //rev up shooter motor and intake motor
             if (aux.getRightBumperReleased()) {
                 this.state = ArmAction.HOLD;
@@ -83,7 +91,9 @@ public class Arm {
                 this.state  = ArmAction.SHOOT;
             }
         } else if (state == ArmAction.SHOOT) {
-            //set motors for shooting speed
+            holdMotor.set(0.5); //will probably need to change
+            m_shooterPidController.setReference(120, CANSparkMax.ControlType.kVelocity); //will change
+            m_intakePidController.setReference(120, CANSparkMax.ControlType.kVelocity); //will change
             if (aux.getBButtonReleased()) {
                 this.state = ArmAction.STOPPED;
                 //possibly use time
