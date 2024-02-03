@@ -1,5 +1,6 @@
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.ColorSensorV3;
 import com.revrobotics.RelativeEncoder;
@@ -13,27 +14,85 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Arm {
     private SparkPIDController m_shooterPidController;
     private SparkPIDController m_intakePidController;
+
+    // color sensor
+    private final I2C.Port i2cPort = I2C.Port.kOnboard;
+    private final ColorSensorV3 colorSensor = new ColorSensorV3(i2cPort);
+
     public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM;
 
     public Limelight limelight;
 
     public Arm(Limelight limelight) {
         this.limelight = limelight;
+        SmartDashboard.putBoolean("Note Detected", false);
+    }
+
+    private boolean isNoteDetected() {
+        return SmartDashboard.getBoolean("Note Detected", false);
     }
 
     // testing neos
     public CANSparkMax shootMotor = new CANSparkMax(8, MotorType.kBrushless);
     // - make talon public CANSparkMax holdMotor = new CANSparkMax(3, MotorType.kBrushless); //probably a talon
     public CANSparkMax intakeMotor = new CANSparkMax(9, MotorType.kBrushless);
+    //public WPI_TalonSRX holdMotor = 
+    public WPI_TalonSRX holdMotor = new WPI_TalonSRX(10);
 
     public static XboxController aux = new XboxController(1); // 1 is the zux controller - oml "zux" can we rename aux to that
 
     public RelativeEncoder shooterEncoder = shootMotor.getEncoder();
     public RelativeEncoder intakeEncoder = intakeMotor.getEncoder();
 
-    public void armFunctions() {
-        double shootSpeed = -aux.getLeftY();
-        double intakeSpeed = aux.getRightY();
+    ArmAction state;
+
+    enum ArmAction { STOPPED, INTAKE, HOLD, REV_UP, SHOOT
+    }
+
+    ArmAction[] armActions = {};
+
+    public void armTeleopInit() {
+        this.state = ArmAction.STOPPED;
+    }
+
+    public void armUpdate() {
+        System.out.println(state.name());
+        if (state == ArmAction.STOPPED) {
+            holdMotor.set(0);
+            
+            if (aux.getAButtonPressed()) {
+                this.state = ArmAction.INTAKE;
+            }
+        } else if (state == ArmAction.INTAKE) {
+            //set intake motors
+            if (aux.getAButtonPressed()) {
+                this.state = ArmAction.STOPPED;
+            } else if (isNoteDetected()) { //color is detected
+                this.state = ArmAction.HOLD;
+            }
+        } else if (state == ArmAction.HOLD) {
+            //stop motors
+            if (aux.getRightBumper()) {
+                this.state = ArmAction.REV_UP;
+            }
+        } else if (state == ArmAction.REV_UP) {
+            //rev up shooter motor and intake motor
+            if (aux.getRightBumperReleased()) {
+                this.state = ArmAction.HOLD;
+            } else if (aux.getBButton()) {
+                this.state  = ArmAction.SHOOT;
+            }
+        } else if (state == ArmAction.SHOOT) {
+            //set motors for shooting speed
+            if (aux.getBButtonReleased()) {
+                this.state = ArmAction.STOPPED;
+                //possibly use time
+                //driver needs to hold until note is released 
+            }
+        }
+    }
+
+    public void armPidValues() {
 
         m_shooterPidController = shootMotor.getPIDController();
         m_intakePidController = intakeMotor.getPIDController();
@@ -103,15 +162,14 @@ public class Arm {
         double setPointShooter = -aux.getLeftY()*maxRPM;
         double setPointIntake = aux.getRightY()*maxRPM;
         m_shooterPidController.setReference(setPointShooter, CANSparkMax.ControlType.kVelocity);
-        m_intakePidController.setReference(setPointIntake, CANSparkMax.ControlType.kVelocity);
         
         SmartDashboard.putNumber("SetPointShooter", setPointShooter);
         SmartDashboard.putNumber("SetPointIntake", setPointIntake);
         SmartDashboard.putNumber("ProcessVariableShooter", shooterEncoder.getVelocity());
         SmartDashboard.putNumber("ProcessVariableIntake", intakeEncoder.getVelocity());
-
-        if (Math.abs(intakeSpeed) < Constants.AUX_DEADZONE) {
-            intakeMotor.set(0);
+    }
+        /*if () {
+            m_intakePidController.setReference(setPointIntake, CANSparkMax.ControlType.kVelocity);
         } else {
             //intakeMotor.set();
         }
@@ -120,15 +178,17 @@ public class Arm {
             shootMotor.set(0);
         } else {
             //shootMotor.set();
-        }
+        } */
 
-        SmartDashboard.putNumber("Trigger value 1:" , aux.getLeftY());
-        SmartDashboard.putNumber("Trigger value 2:", aux.getRightY());
+        //SmartDashboard.putNumber("Trigger value 1:" , aux.getLeftY());
+        //SmartDashboard.putNumber("Trigger value 2:", aux.getRightY());
 
-        System.out.println("Trigger value 1:" + aux.getLeftY());
-        System.out.println("Trigger value 2:"+ aux.getRightY());
+        //System.out.println("Trigger value 1:" + aux.getLeftY());
+        //System.out.println("Trigger value 2:"+ aux.getRightY());
 
         // limelight stuff to calculate distance with april tags
+
+    public void shooterDistance() {
         double targetOffsetAngle_Vertical = limelight.ty.getDouble(0.0); // getting the vertical angle that the
                                                                          // limelight is off from the april tag
         double limelightMountAngleDegrees = -2; // will need to change
@@ -148,39 +208,7 @@ public class Arm {
 
     }
 
-    public void intake() { //does auto need a different code
-        //if color sensor = ring then set(0) first?
-        if (aux.getAButtonPressed()) { //ADD && no ring in intake (colorsensor?)
-            intakeMotor.set(.2); // DO RPM
-            //holderMotor.set(0.01);
-        } else {
-            intakeMotor.set(0);
-            //holderMotor.set(0.01);
-            int setPoint;
-            //intakeMotor.setReference(setPoint, CANSparkMax.ControlType.kVelocity); //would be using pidcontroller
-        }
-    }
-    
-    public void shoot() {
-        
-    }
-
-    // color sensor
-    private final I2C.Port i2cPort = I2C.Port.kOnboard;
-    private final ColorSensorV3 colorSensor = new ColorSensorV3(i2cPort);
-
-    // default intake (arm down)
-    // 1 motor to drive arm up
-    // activate intake, move arm up, hold in place using other "intake", speed up
-    // Shooter, move note using Holder
-    // square to SPEAKER using apriltag
-    // trig the angle and speed to shoot
-
-    // button to activate INTAKE (not dragging, slightly off ground) **IF has note
-    // THEN arm up (parallel with robot chassis)**
-    //
-
-    // mech will decide locking mechanism so arm can stop at multiple angles
+    // mech will decide locking mechanism so arm can stop at multiple angles --> did not happen :((((((((((( only one angle allowed
 
     // add brake
 }

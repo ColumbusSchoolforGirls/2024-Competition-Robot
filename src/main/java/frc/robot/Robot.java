@@ -212,6 +212,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     driveTrain.resetEncoders();
+    arm.armTeleopInit();
   }
 
   /** This function is called periodically during operator control. */
@@ -230,8 +231,9 @@ public class Robot extends TimedRobot {
       driveTrain.setTeleop(); // switches between brake and coast when you press x button
     }
 
-    arm.armFunctions(1, 1);
-
+    arm.armUpdate();
+    arm.armPidValues();
+    arm.shooterDistance();
   }
 
   /** This function is called once when the robot is disabled. */
