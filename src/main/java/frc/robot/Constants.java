@@ -14,11 +14,12 @@ public final class Constants {
 
     // tolerance (deadzone) for auto
     public static final double TURN_TOLERANCE = 2.0; 
-    public static final double DISTANCE_TOLERANCE = 0.075;
+    public static final double DISTANCE_TOLERANCE = 0.1;
     public static final double SQUARE_TOLERANCE = 1.5;
 
     //arm stuff
     public static final double AUX_DEADZONE = 0.1;
+    public static final int INTAKE_LIMIT_SWITCH_CHANNEL = 0;
     
 }
 

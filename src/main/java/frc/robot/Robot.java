@@ -21,7 +21,7 @@ public class Robot extends TimedRobot {
   //our different files
   public DriveTrain driveTrain;
   public Limelight limelight;
-  public Arm arm;
+  public NoteSystem noteSystem;
   public static double gyroAngle;
   //set arm brake?
   
@@ -61,7 +61,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     limelight = new Limelight(driveTrain);
     driveTrain = new DriveTrain(limelight); // PS this rests encoders at initialization
-    arm = new Arm(limelight); 
+    noteSystem = new NoteSystem(limelight); 
 
     //autopath options for dashboard
     autoPaths.put("MiddleDriveAim", AutoPaths.autoMiddleDriveAim);
@@ -212,7 +212,8 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopInit() {
     driveTrain.resetEncoders();
-    arm.armTeleopInit();
+    noteSystem.armTeleopInit();
+    noteSystem.armSetUpPid();
   }
 
   /** This function is called periodically during operator control. */
@@ -231,9 +232,8 @@ public class Robot extends TimedRobot {
       driveTrain.setTeleop(); // switches between brake and coast when you press x button
     }
 
-    arm.armUpdate();
-    arm.armPidValues();
-    arm.shooterDistance();
+    noteSystem.armUpdate();
+    noteSystem.shooterDistance();
   }
 
   /** This function is called once when the robot is disabled. */

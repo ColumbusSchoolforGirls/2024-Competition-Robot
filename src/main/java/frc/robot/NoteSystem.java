@@ -7,29 +7,28 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
-import edu.wpi.first.wpilibj.I2C;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-public class Arm {
+public class NoteSystem {
     private SparkPIDController m_shooterPidController;
     private SparkPIDController m_intakePidController;
 
     // color sensor
-    private final I2C.Port i2cPort = I2C.Port.kOnboard;
-    private final ColorSensorV3 colorSensor = new ColorSensorV3(i2cPort);
-
+    private static DigitalInput intakeLimitSwitch = new DigitalInput(Constants.INTAKE_LIMIT_SWITCH_CHANNEL);
+    
     public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM;
 
     public Limelight limelight;
 
-    public Arm(Limelight limelight) {
+    public NoteSystem(Limelight limelight) {
         this.limelight = limelight;
         SmartDashboard.putBoolean("Note Detected", false);
     }
 
     private boolean isNoteDetected() {
-        return SmartDashboard.getBoolean("Note Detected", false);
+        return intakeLimitSwitch.get();
     }
 
     // testing neos
@@ -63,6 +62,8 @@ public class Arm {
             m_intakePidController.setReference(0, CANSparkMax.ControlType.kVelocity);
             if (aux.getAButtonPressed()) {
                 this.state = ArmAction.INTAKE;
+            } else if (aux.getRightBumper()) {
+                this.state = ArmAction.REV_UP;
             }
         } else if (state == ArmAction.INTAKE) {
             holdMotor.set(-0.5); //will probably change?
@@ -102,7 +103,7 @@ public class Arm {
         }
     }
 
-    public void armPidValues() {
+    public void armSetUpPid() {
 
         m_shooterPidController = shootMotor.getPIDController();
         m_intakePidController = intakeMotor.getPIDController();
@@ -131,52 +132,52 @@ public class Arm {
         m_intakePidController.setFF(kFF);
         m_intakePidController.setOutputRange(kMinOutput, kMaxOutput);
     
-        // display PID coefficients on SmartDashboard
-        SmartDashboard.putNumber("P Gain", kP);
-        SmartDashboard.putNumber("I Gain", kI);
-        SmartDashboard.putNumber("D Gain", kD);
-        SmartDashboard.putNumber("I Zone", kIz);
-        SmartDashboard.putNumber("Feed Forward", kFF);
-        SmartDashboard.putNumber("Max Output", kMaxOutput);
-        SmartDashboard.putNumber("Min Output", kMinOutput);
+        // // display PID coefficients on SmartDashboard
+        // SmartDashboard.putNumber("P Gain", kP);
+        // SmartDashboard.putNumber("I Gain", kI);
+        // SmartDashboard.putNumber("D Gain", kD);
+        // SmartDashboard.putNumber("I Zone", kIz);
+        // SmartDashboard.putNumber("Feed Forward", kFF);
+        // SmartDashboard.putNumber("Max Output", kMaxOutput);
+        // SmartDashboard.putNumber("Min Output", kMinOutput);
 
-        // read PID coefficients from SmartDashboard
-        double p = SmartDashboard.getNumber("P Gain", 0);
-        double i = SmartDashboard.getNumber("I Gain", 0);
-        double d = SmartDashboard.getNumber("D Gain", 0);
-        double iz = SmartDashboard.getNumber("I Zone", 0);
-        double ff = SmartDashboard.getNumber("Feed Forward", 0);
-        double max = SmartDashboard.getNumber("Max Output", 0);
-        double min = SmartDashboard.getNumber("Min Output", 0);
+        // // read PID coefficients from SmartDashboard
+        // double p = SmartDashboard.getNumber("P Gain", 0);
+        // double i = SmartDashboard.getNumber("I Gain", 0);
+        // double d = SmartDashboard.getNumber("D Gain", 0);
+        // double iz = SmartDashboard.getNumber("I Zone", 0);
+        // double ff = SmartDashboard.getNumber("Feed Forward", 0);
+        // double max = SmartDashboard.getNumber("Max Output", 0);
+        // double min = SmartDashboard.getNumber("Min Output", 0);
     
-        // if PID coefficients on SmartDashboard have changed, write new values to controller
-        if((p != kP)) { m_shooterPidController.setP(p); kP = p; }
-        if((i != kI)) { m_shooterPidController.setI(i); kI = i; }
-        if((d != kD)) { m_shooterPidController.setD(d); kD = d; }
-        if((iz != kIz)) { m_shooterPidController.setIZone(iz); kIz = iz; }
-        if((ff != kFF)) { m_shooterPidController.setFF(ff); kFF = ff; }
-        if((max != kMaxOutput) || (min != kMinOutput)) { 
-            m_shooterPidController.setOutputRange(min, max); 
-            kMinOutput = min; kMaxOutput = max; 
-        }
-        if((p != kP)) { m_intakePidController.setP(p); kP = p; }
-        if((i != kI)) { m_intakePidController.setI(i); kI = i; }
-        if((d != kD)) { m_intakePidController.setD(d); kD = d; }
-        if((iz != kIz)) { m_intakePidController.setIZone(iz); kIz = iz; }
-        if((ff != kFF)) { m_intakePidController.setFF(ff); kFF = ff; }
-        if((max != kMaxOutput) || (min != kMinOutput)) { 
-            m_intakePidController.setOutputRange(min, max); 
-            kMinOutput = min; kMaxOutput = max; 
-        }
+        // // if PID coefficients on SmartDashboard have changed, write new values to controller
+        // if((p != kP)) { m_shooterPidController.setP(p); kP = p; }
+        // if((i != kI)) { m_shooterPidController.setI(i); kI = i; }
+        // if((d != kD)) { m_shooterPidController.setD(d); kD = d; }
+        // if((iz != kIz)) { m_shooterPidController.setIZone(iz); kIz = iz; }
+        // if((ff != kFF)) { m_shooterPidController.setFF(ff); kFF = ff; }
+        // if((max != kMaxOutput) || (min != kMinOutput)) { 
+        //     m_shooterPidController.setOutputRange(min, max); 
+        //     kMinOutput = min; kMaxOutput = max; 
+        // }
+        // if((p != kP)) { m_intakePidController.setP(p); kP = p; }
+        // if((i != kI)) { m_intakePidController.setI(i); kI = i; }
+        // if((d != kD)) { m_intakePidController.setD(d); kD = d; }
+        // if((iz != kIz)) { m_intakePidController.setIZone(iz); kIz = iz; }
+        // if((ff != kFF)) { m_intakePidController.setFF(ff); kFF = ff; }
+        // if((max != kMaxOutput) || (min != kMinOutput)) { 
+        //     m_intakePidController.setOutputRange(min, max); 
+        //     kMinOutput = min; kMaxOutput = max; 
+        // }
 
-        double setPointShooter = -aux.getLeftY()*maxRPM;
-        double setPointIntake = aux.getRightY()*maxRPM;
-        m_shooterPidController.setReference(setPointShooter, CANSparkMax.ControlType.kVelocity);
+        // double setPointShooter = -aux.getLeftY()*maxRPM;
+        // double setPointIntake = aux.getRightY()*maxRPM;
+        // m_shooterPidController.setReference(setPointShooter, CANSparkMax.ControlType.kVelocity);
         
-        SmartDashboard.putNumber("SetPointShooter", setPointShooter);
-        SmartDashboard.putNumber("SetPointIntake", setPointIntake);
-        SmartDashboard.putNumber("ProcessVariableShooter", shooterEncoder.getVelocity());
-        SmartDashboard.putNumber("ProcessVariableIntake", intakeEncoder.getVelocity());
+        // SmartDashboard.putNumber("SetPointShooter", setPointShooter);
+        // SmartDashboard.putNumber("SetPointIntake", setPointIntake);
+        // SmartDashboard.putNumber("ProcessVariableShooter", shooterEncoder.getVelocity());
+        // SmartDashboard.putNumber("ProcessVariableIntake", intakeEncoder.getVelocity());
     }
         /*if () {
             m_intakePidController.setReference(setPointIntake, CANSparkMax.ControlType.kVelocity);

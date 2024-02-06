@@ -189,7 +189,7 @@ public class DriveTrain {
     public boolean driveComplete() {
         driveDifference = targetDistance - getFrontLeftEncoder();
         if (Math.abs(driveDifference) < Constants.DISTANCE_TOLERANCE) {
-            if(frontLeftEncoder.getVelocity() < 0.05){
+            if(frontLeftEncoder.getVelocity() < 0.03){ //to prevent skidding bc of turning before drive is complete
                 return true;
             } 
 
@@ -226,29 +226,23 @@ public class DriveTrain {
     
     public void autoDrive() {
         driveDifference = targetDistance - getFrontLeftEncoder();
-        double speed = 0.5; //will likely change
+        double speed = 0.15; //will likely change
+        speed = speed * (driveDifference/driveDifference);
 
-        if (Math.abs(getFrontLeftEncoder()) < Constants.SLOWING_DISTANCE) { // magic number >:( -NC
-            speed = 0.2;
+        // if (driveDifference < Constants.SLOWING_DISTANCE) { // magic number >:( -NC
+        //     speed = 0.2;
+        // } else if (driveDifference > -Constants.SLOWING_DISTANCE) {
+        //     speed = -0.2;
+        // }
+
+        if (driveDifference < Constants.DISTANCE_TOLERANCE && driveDifference > -Constants.DISTANCE_TOLERANCE) {
+            speed = 0;
+        } else if (driveDifference > 0 && Math.abs(getFrontLeftEncoder()) > 5) {
+            speed = 0.0075 * Math.abs(driveDifference) + 0.05;
+        } else if (driveDifference < 0 && Math.abs(getFrontLeftEncoder()) > 5) {
+            speed = -0.0075 * Math.abs(driveDifference) - 0.05;
         }
-
-        if(driveDifference > Constants.DISTANCE_TOLERANCE) {
-            robotDrive.driveCartesian(speed, 0, 0);
-        } else if (driveDifference < -Constants.DISTANCE_TOLERANCE) {
-            robotDrive.driveCartesian(-speed, 0, 0);
-        } else {
-            robotDrive.driveCartesian(0,0,0);
-        }
-
-        /*if (driveDifference < Constants.DISTANCE_TOLERANCE && driveDifference > -Constants.DISTANCE_TOLERANCE) {
-            //limelight.rotationSpeed = 0;
-
-        } else if (driveDifference > 0 && Math.abs(getFrontLeftEncoder()) > 3) {
-            speed = 0.005 * Math.abs(driveDifference) + 0.05;
-        } else if (driveDifference < 0 && Math.abs(getFrontLeftEncoder()) > 3) {
-            speed = -0.005 * Math.abs(driveDifference) - 0.05;
-        }
-        robotDrive.driveCartesian(speed, 0, 0);*/
+        robotDrive.driveCartesian(speed, 0, 0);
         // remove printlines -NC
         System.out.println("ENCODER INCHES: " + getFrontLeftEncoder());
         System.out.println("DRIVE DIFFERENCE (DIST FROM TARGET): " + driveDifference);

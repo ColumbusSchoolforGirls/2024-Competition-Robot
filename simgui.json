@@ -1,15 +1,30 @@
 {
   "HALProvider": {
     "Other Devices": {
-      "REV Color Sensor V3[0,82]": {
-        "header": {
-          "open": true
-        }
-      },
       "SPARK MAX [8]": {
         "header": {
           "open": true
         }
+      },
+      "SPARK MAX [9]": {
+        "header": {
+          "open": true
+        }
+      },
+      "Talon SRX[10]": {
+        "header": {
+          "open": true
+        }
+      },
+      "navX-Sensor[0]": {
+        "header": {
+          "open": true
+        }
+      }
+    },
+    "RoboRIO": {
+      "window": {
+        "visible": true
       }
     }
   },
@@ -20,13 +35,31 @@
     }
   },
   "NetworkTables": {
+    "Transitory Values": {
+      "open": false
+    },
     "transitory": {
       "LiveWindow": {
+        "open": true
+      },
+      "Shuffleboard": {
         "open": true
       }
     }
   },
   "NetworkTables Info": {
+    "Clients": {
+      "open": true
+    },
+    "Server": {
+      "Publishers": {
+        "open": true
+      },
+      "Subscribers": {
+        "open": true
+      },
+      "open": true
+    },
     "visible": true
   }
 }
