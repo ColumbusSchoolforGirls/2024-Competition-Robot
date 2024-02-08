@@ -22,6 +22,7 @@ public class Robot extends TimedRobot {
   public DriveTrain driveTrain;
   public Limelight limelight;
   public NoteSystem noteSystem;
+  public Climber climber;
   public static double gyroAngle;
   //set arm brake?
   
