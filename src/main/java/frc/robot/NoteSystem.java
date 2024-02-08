@@ -1,8 +1,9 @@
+//include rev with shoot?
+
 package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.ColorSensorV3;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkLowLevel.MotorType;
@@ -15,7 +16,7 @@ public class NoteSystem {
     private SparkPIDController m_shooterPidController;
     private SparkPIDController m_intakePidController;
 
-    // color sensor
+    // limit switch not color sensor
     private static DigitalInput intakeLimitSwitch = new DigitalInput(Constants.INTAKE_LIMIT_SWITCH_CHANNEL);
     
     public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM;
@@ -43,67 +44,68 @@ public class NoteSystem {
     public RelativeEncoder shooterEncoder = shootMotor.getEncoder();
     public RelativeEncoder intakeEncoder = intakeMotor.getEncoder();
 
-    ArmAction state;
+    NoteAction state;
 
-    enum ArmAction { STOPPED, INTAKE, HOLD, REV_UP, SHOOT
+    enum NoteAction { 
+        STOPPED, INTAKE, HOLD, REV_UP, SHOOT
     }
 
-    ArmAction[] armActions = {};
+    NoteAction[] noteActions = {};
 
-    public void armTeleopInit() {
-        this.state = ArmAction.STOPPED;
+    public void noteSystemTeleopInit() { //not being used?
+        this.state = NoteAction.STOPPED;
     }
 
-    public void armUpdate() {
+    public void noteSystemUpdate() {
         System.out.println(state.name());
-        if (state == ArmAction.STOPPED) {
+        if (state == NoteAction.STOPPED) {
             holdMotor.set(0);
             m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
             m_intakePidController.setReference(0, CANSparkMax.ControlType.kVelocity);
             if (aux.getAButtonPressed()) {
-                this.state = ArmAction.INTAKE;
+                this.state = NoteAction.INTAKE;
             } else if (aux.getRightBumper()) {
-                this.state = ArmAction.REV_UP;
+                this.state = NoteAction.REV_UP;
             }
-        } else if (state == ArmAction.INTAKE) {
+        } else if (state == NoteAction.INTAKE) {
             holdMotor.set(-0.5); //will probably change?
             m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
             m_intakePidController.setReference(-120, CANSparkMax.ControlType.kVelocity); //will change with testing
             if (aux.getAButtonPressed()) {
-                this.state = ArmAction.STOPPED;
+                this.state = NoteAction.STOPPED;
             } else if (isNoteDetected()) { //color is detected
-                this.state = ArmAction.HOLD;
+                this.state = NoteAction.HOLD;
             }
-        } else if (state == ArmAction.HOLD) {
+        } else if (state == NoteAction.HOLD) {
             holdMotor.set(0);
             m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
             m_intakePidController.setReference(0, CANSparkMax.ControlType.kVelocity);
             if (aux.getRightBumper()) {
-                this.state = ArmAction.REV_UP;
+                this.state = NoteAction.REV_UP;
             }
-        } else if (state == ArmAction.REV_UP) {
+        } else if (state == NoteAction.REV_UP) {
             holdMotor.set(0);
             m_shooterPidController.setReference(120, CANSparkMax.ControlType.kVelocity);
             m_intakePidController.setReference(120, CANSparkMax.ControlType.kVelocity);
             //rev up shooter motor and intake motor
             if (aux.getRightBumperReleased()) {
-                this.state = ArmAction.HOLD;
+                this.state = NoteAction.HOLD;
             } else if (aux.getBButton()) {
-                this.state  = ArmAction.SHOOT;
+                this.state  = NoteAction.SHOOT;
             }
-        } else if (state == ArmAction.SHOOT) {
+        } else if (state == NoteAction.SHOOT) {
             holdMotor.set(0.5); //will probably need to change
             m_shooterPidController.setReference(120, CANSparkMax.ControlType.kVelocity); //will change
             m_intakePidController.setReference(120, CANSparkMax.ControlType.kVelocity); //will change
             if (aux.getBButtonReleased()) {
-                this.state = ArmAction.STOPPED;
+                this.state = NoteAction.STOPPED;
                 //possibly use time
                 //driver needs to hold until note is released 
             }
         }
     }
 
-    public void armSetUpPid() {
+    public void noteSystemSetUpPid() {
 
         m_shooterPidController = shootMotor.getPIDController();
         m_intakePidController = intakeMotor.getPIDController();

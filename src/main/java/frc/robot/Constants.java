@@ -17,7 +17,7 @@ public final class Constants {
     public static final double DISTANCE_TOLERANCE = 0.1;
     public static final double SQUARE_TOLERANCE = 1.5;
 
-    //arm stuff
+    //note stuff
     public static final double AUX_DEADZONE = 0.1;
     public static final int INTAKE_LIMIT_SWITCH_CHANNEL = 0;
     
