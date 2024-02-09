@@ -38,6 +38,14 @@
     "Transitory Values": {
       "open": false
     },
+    "retained": {
+      "SmartDashboard": {
+        "Auto choices": {
+          "open": true
+        },
+        "open": true
+      }
+    },
     "transitory": {
       "LiveWindow": {
         "open": true
@@ -51,11 +59,11 @@
     "Clients": {
       "open": true
     },
+    "Connections": {
+      "open": true
+    },
     "Server": {
       "Publishers": {
-        "open": true
-      },
-      "Subscribers": {
         "open": true
       },
       "open": true

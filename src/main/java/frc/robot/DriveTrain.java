@@ -244,8 +244,8 @@ public class DriveTrain {
         }
         robotDrive.driveCartesian(speed, 0, 0);
         // remove printlines -NC
-        System.out.println("ENCODER INCHES: " + getFrontLeftEncoder());
-        System.out.println("DRIVE DIFFERENCE (DIST FROM TARGET): " + driveDifference);
+        //System.out.println("ENCODER INCHES: " + getFrontLeftEncoder());
+        //System.out.println("DRIVE DIFFERENCE (DIST FROM TARGET): " + driveDifference);
 
     }
 

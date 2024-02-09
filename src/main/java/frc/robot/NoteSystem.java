@@ -1,4 +1,10 @@
-//include rev with shoot?
+//include rev with shoot? TALK TO NOAH SATURDAY 2/10/24
+//limelight ground distance print is commented
+//limitswitch code (intake->hold) commented
+//ABUTTON CHANGED TO LEFTBUMPER (me as aux i want it to be leftbumper, if shooter incorporates rev KEEP IT RIGHT BUMPER)
+//leftBumperReleased for making hold->stopped STATE change easier (doesn't bug into INTAKE for a second)
+
+//rev-> hold -> intake broken EDIT: maybe fixed?
 
 package frc.robot;
 
@@ -25,11 +31,15 @@ public class NoteSystem {
 
     public NoteSystem(Limelight limelight) {
         this.limelight = limelight;
+        this.state = state;
         SmartDashboard.putBoolean("Note Detected", false);
     }
 
     private boolean isNoteDetected() {
-        return intakeLimitSwitch.get();
+        // boolean note = intakeLimitSwitch.get();
+        // SmartDashboard.putBoolean("Note Detected?", note); //green box if it is detected
+        // return note;
+        return SmartDashboard.putBoolean("Note Detected?", false);
     }
 
     // testing neos
@@ -47,7 +57,7 @@ public class NoteSystem {
     NoteAction state;
 
     enum NoteAction { 
-        STOPPED, INTAKE, HOLD, REV_UP, SHOOT
+        STOPPED, INTAKE, HOLD, REV_UP, SHOOT, REVERSEINTAKE 
     }
 
     NoteAction[] noteActions = {};
@@ -62,26 +72,40 @@ public class NoteSystem {
             holdMotor.set(0);
             m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
             m_intakePidController.setReference(0, CANSparkMax.ControlType.kVelocity);
-            if (aux.getAButtonPressed()) {
-                this.state = NoteAction.INTAKE;
+            if (aux.getLeftBumper()) {
+                state = NoteAction.INTAKE;
             } else if (aux.getRightBumper()) {
-                this.state = NoteAction.REV_UP;
+                state = NoteAction.REV_UP;
+            } else if (aux.getXButton()) {
+                state = NoteAction.REVERSEINTAKE;   
             }
         } else if (state == NoteAction.INTAKE) {
             holdMotor.set(-0.5); //will probably change?
             m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
+            m_intakePidController.setReference(120, CANSparkMax.ControlType.kVelocity); //will change with testing
+            if (!aux.getLeftBumper()) {
+                state = NoteAction.STOPPED;
+            } //else if (isNoteDetected()) { //color is detected
+                //this.state = NoteAction.HOLD;
+            //} CHANGE BACK
+        } else if (state == NoteAction.REVERSEINTAKE) { //FROM STOPPED OR HOLD
+            holdMotor.set(0.5); //will probably change?
+            m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
             m_intakePidController.setReference(-120, CANSparkMax.ControlType.kVelocity); //will change with testing
-            if (aux.getAButtonPressed()) {
-                this.state = NoteAction.STOPPED;
-            } else if (isNoteDetected()) { //color is detected
-                this.state = NoteAction.HOLD;
+            if (!aux.getXButton()) {
+                state = NoteAction.STOPPED;
             }
-        } else if (state == NoteAction.HOLD) {
+        } 
+        else if (state == NoteAction.HOLD) {
             holdMotor.set(0);
             m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
             m_intakePidController.setReference(0, CANSparkMax.ControlType.kVelocity);
             if (aux.getRightBumper()) {
-                this.state = NoteAction.REV_UP;
+                state = NoteAction.REV_UP;
+            } else if (aux.getLeftBumperReleased()) { //in case you rev-up w/o a note (notesystem: cant hold->intake so INSTEAD hold->stopped->intake to try again)
+                state = NoteAction.STOPPED; //feels a little broken please check
+            } else if (aux.getXButton()) {
+                state = NoteAction.REVERSEINTAKE;
             }
         } else if (state == NoteAction.REV_UP) {
             holdMotor.set(0);
@@ -95,7 +119,7 @@ public class NoteSystem {
             }
         } else if (state == NoteAction.SHOOT) {
             holdMotor.set(0.5); //will probably need to change
-            m_shooterPidController.setReference(120, CANSparkMax.ControlType.kVelocity); //will change
+            m_shooterPidController.setReference(-120, CANSparkMax.ControlType.kVelocity); //will change
             m_intakePidController.setReference(120, CANSparkMax.ControlType.kVelocity); //will change
             if (aux.getBButtonReleased()) {
                 this.state = NoteAction.STOPPED;
@@ -217,7 +241,7 @@ public class NoteSystem {
         double groundDistanceToSpeaker = Math.sqrt(Math.pow(distanceFromLimelightToGoal, 2) - Math.pow( heightDistanceFromLimelightToAprilTag , 2));
         // double shooterAngle = something where distanceFromLimelightToGoal is the
         // independent variable
-        System.out.println("Distance on ground from limelight to april tag:" + groundDistanceToSpeaker);
+        //System.out.println("Distance on ground from limelight to april tag:" + groundDistanceToSpeaker);
 
     }
 
