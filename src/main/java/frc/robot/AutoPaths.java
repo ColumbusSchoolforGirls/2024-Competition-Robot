@@ -10,11 +10,11 @@ public class AutoPaths{
 
 
  public static AutoStep[] autoMiddleDriveAim = {
-    new AutoStep(AutoAction.DRIVE, -50), 
-    new AutoStep(AutoAction.DRIVE, -50),
-    new AutoStep(AutoAction.DRIVE, -50),
-    new AutoStep(AutoAction.DRIVE, -50),
-    new AutoStep(AutoAction.AIM, -100)
+    new AutoStep(AutoAction.DRIVE, 20), 
+  //  new AutoStep(AutoAction.DRIVE, 40),
+  //  new AutoStep(AutoAction.DRIVE, -50),
+   // new AutoStep(AutoAction.DRIVE, -50),
+    new AutoStep(AutoAction.AIM, 30)
   };
 
  public static AutoStep[] autoRight = { // Rename 
@@ -61,8 +61,8 @@ public class AutoPaths{
    public static AutoStep[] autoLeftLeaveIntake = {
     new AutoStep(AutoAction.TURN, 90),
     new AutoStep(AutoAction.DRIVE, -50),
-    new AutoStep(AutoAction.DRIVEINTAKEDOWN, 0),
-    new AutoStep(AutoAction.DRIVEINTAKEUP, 0),
+    // new AutoStep(AutoAction.DRIVEINTAKEDOWN, 0),
+    // new AutoStep(AutoAction.DRIVEINTAKEUP, 0),
   };
 
    public static AutoStep[] autoLeftLeave = {
@@ -78,8 +78,8 @@ public class AutoPaths{
     new AutoStep(AutoAction.SHOOT, 0),
     new AutoStep(AutoAction.TURN, 0),
     new AutoStep(AutoAction.DRIVE, 0),
-    new AutoStep(AutoAction.DRIVEINTAKEDOWN, 0),
-    new AutoStep(AutoAction.DRIVEINTAKEUP, 0),
+    // new AutoStep(AutoAction.DRIVEINTAKEDOWN, 0),
+    // new AutoStep(AutoAction.DRIVEINTAKEUP, 0),
   };
   
   public static AutoStep[] autoMiddleShootLeave = {
@@ -94,8 +94,8 @@ public class AutoPaths{
   public static AutoStep[] autoMiddleLeaveIntake = {
     new AutoStep(AutoAction.TURN, 0),
     new AutoStep(AutoAction.DRIVE, 0),
-    new AutoStep(AutoAction.DRIVEINTAKEDOWN, 0),
-    new AutoStep(AutoAction.DRIVEINTAKEUP, 0)
+    // new AutoStep(AutoAction.DRIVEINTAKEDOWN, 0),
+    // new AutoStep(AutoAction.DRIVEINTAKEUP, 0)
   };
  
   public static AutoStep[] autoMiddleLeave = {
@@ -110,8 +110,8 @@ public class AutoPaths{
     new AutoStep(AutoAction.SHOOT, 0),
     new AutoStep(AutoAction.TURN, 0),
     new AutoStep(AutoAction.DRIVE, 0),
-    new AutoStep(AutoAction.DRIVEINTAKEDOWN, 0),
-    new AutoStep(AutoAction.DRIVEINTAKEUP, 0)
+    // new AutoStep(AutoAction.DRIVEINTAKEDOWN, 0),
+    // new AutoStep(AutoAction.DRIVEINTAKEUP, 0)
   };
 
   public static AutoStep[] autoRightShootLeave = {
@@ -126,8 +126,8 @@ public class AutoPaths{
   public static AutoStep[] autoRightLeaveIntake = {
     new AutoStep(AutoAction.TURN, 0),
     new AutoStep(AutoAction.DRIVE, 0),
-    new AutoStep(AutoAction.DRIVEINTAKEDOWN, 0),
-    new AutoStep(AutoAction.DRIVEINTAKEUP, 0)
+    // new AutoStep(AutoAction.DRIVEINTAKEDOWN, 0),
+    // new AutoStep(AutoAction.DRIVEINTAKEUP, 0)
   };
 
   public static AutoStep[] autoRightLeave = {
@@ -142,7 +142,7 @@ public class AutoPaths{
     new AutoStep(AutoAction.SHOOT, 0),
     new AutoStep(AutoAction.TURN, 0),
     new AutoStep(AutoAction.DRIVE, 0),
-    new AutoStep(AutoAction.DRIVEINTAKEDOWN, 0),
-    new AutoStep(AutoAction.DRIVEINTAKEUP, 0)
+    // new AutoStep(AutoAction.DRIVEINTAKEDOWN, 0),
+    // new AutoStep(AutoAction.DRIVEINTAKEUP, 0)
   };
 }

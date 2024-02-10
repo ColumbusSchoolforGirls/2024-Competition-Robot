@@ -16,6 +16,31 @@
           "open": true
         }
       },
+      "Talon SRX[10]/Quad Encoder": {
+        "header": {
+          "open": true
+        }
+      },
+      "Talon SRX[11]": {
+        "header": {
+          "open": true
+        }
+      },
+      "Talon SRX[11]/Quad Encoder": {
+        "header": {
+          "open": true
+        }
+      },
+      "Talon SRX[12]": {
+        "header": {
+          "open": true
+        }
+      },
+      "Talon SRX[12]/Quad Encoder": {
+        "header": {
+          "open": true
+        }
+      },
       "navX-Sensor[0]": {
         "header": {
           "open": true

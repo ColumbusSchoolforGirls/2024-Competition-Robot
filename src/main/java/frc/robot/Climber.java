@@ -15,11 +15,13 @@ public class Climber {
     WPI_TalonSRX rightClimber = new WPI_TalonSRX(12); //motor 2
 
     public void climb() {
-        if(NoteSystem.aux.getLeftBumper()){
+        if(NoteSystem.aux.getYButton()){
             leftClimber.set(0.2);
             rightClimber.set(0.2);
-
-
+            System.out.println("!!!!!!!!!!!!!!!!!!climbing");
+        } else {
+            leftClimber.set(0);
+            rightClimber.set(0);
         }            
     }   
 

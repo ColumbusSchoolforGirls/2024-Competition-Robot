@@ -63,6 +63,7 @@ public class Robot extends TimedRobot {
     limelight = new Limelight(driveTrain);
     driveTrain = new DriveTrain(limelight); // PS this rests encoders at initialization
     noteSystem = new NoteSystem(limelight); 
+    climber = new Climber(noteSystem);
 
     //autopath options for dashboard
     autoPaths.put("MiddleDriveAim", AutoPaths.autoMiddleDriveAim);
@@ -235,6 +236,7 @@ public class Robot extends TimedRobot {
 
     noteSystem.noteSystemUpdate();
     noteSystem.shooterDistance();
+    climber.climb();
   }
 
   /** This function is called once when the robot is disabled. */
