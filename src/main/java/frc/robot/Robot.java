@@ -9,6 +9,7 @@ import java.util.HashMap;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.NoteSystem.NoteAction;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -155,6 +156,9 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
+    noteSystem.noteSystemUpdate();
+    int i = 0;
+
     /* switch (m_autoSelected) {
       case kCustomAuto:
         // Put custom auto code here
@@ -195,7 +199,29 @@ public class Robot extends TimedRobot {
       }
     } else if (currentStep.getAction() == AutoAction.SHOOT) {
       //connect to noteaction state machine
+      noteSystem.state = NoteAction.REV_UP;
+      if (i > 20) { //make it run 300 times, like a wait() w/o systemTime
+        noteSystem.state = NoteAction.SHOOT;
+      }  
+      if (i > 26) {
+        noteSystem.state = NoteAction.STOPPED;
+      }
+      i++;  
+      if (noteSystem.state == NoteAction.STOPPED) {
         goToNextState();
+        i = 0;
+      }
+    } else if (currentStep.getAction() == AutoAction.INTAKE) {
+      //connect to noteaction state machine
+      noteSystem.state = NoteAction.INTAKE;
+      if (i > 6) { //make it run 300 times, like a wait() w/o systemTime
+        noteSystem.state = NoteAction.HOLD;
+      }  
+      i++;  
+      if (noteSystem.state == NoteAction.HOLD) {
+        goToNextState();
+        i = 0;
+      }
     }
   }
 
