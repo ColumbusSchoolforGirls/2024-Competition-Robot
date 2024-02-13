@@ -1,7 +1,7 @@
 package frc.robot;
 
 public enum AutoAction {
-    DRIVE, AIM, SHOOT, TURN, SQUARE, DRIVEINTAKE
+    DRIVE, SHOOT, TURN, SQUARE, DRIVEINTAKE
   };
 
 

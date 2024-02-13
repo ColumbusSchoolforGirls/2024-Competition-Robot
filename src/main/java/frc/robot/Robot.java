@@ -44,7 +44,7 @@ public class Robot extends TimedRobot {
 
 
 
-//NOTE EVERYTHING MUST BE DUPLICATED FOR OPPOSITE ALLIANCE BECAUSE ALLIANCES ARE MIRRORED NOT EXACT REPLICAS
+//NOTE EVERYTHING M UST BE DUPLICATED FOR OPPOSITE ALLIANCE BECAUSE ALLIANCES ARE MIRRORED NOT EXACT REPLICAS
 
 
 
@@ -66,22 +66,13 @@ public class Robot extends TimedRobot {
     climber = new Climber(noteSystem);
 
     //autopath options for dashboard
-    autoPaths.put("MiddleDriveAim", AutoPaths.autoMiddleDriveAim);
-    autoPaths.put("Right", AutoPaths.autoRight);//rename
-    autoPaths.put("Left", AutoPaths.autoLeft); //renmae
-    autoPaths.put("LeftShootLeave", AutoPaths.autoLeftShootLeave);
-    autoPaths.put("LeftLeaveIntake", AutoPaths.autoLeftLeaveIntake);
-    autoPaths.put("LeftLeave", AutoPaths.autoLeftLeave);
-    autoPaths.put("LeftShootLeaveIntake", AutoPaths.autoLeftShootLeaveIntake);
-    autoPaths.put("MiddleShootLeave", AutoPaths.autoMiddleShootLeave);
-    autoPaths.put("MiddleLeaveIntake", AutoPaths.autoMiddleLeaveIntake);
-    autoPaths.put("MiddleLeave", AutoPaths.autoMiddleLeave);
-    autoPaths.put("MiddeShootLeaveIntake", AutoPaths.autoMiddleShootLeaveIntake);
-    autoPaths.put("RightShootLeave", AutoPaths.autoRightShootLeave);  
-    autoPaths.put("RightLeaveIntake", AutoPaths.autoRightLeaveIntake);
-    autoPaths.put("RightLeave", AutoPaths.autoRightLeave);
-    autoPaths.put("RightShootLeaveIntake", AutoPaths.autoRightShootLeaveIntake);
-    autoPaths.put("Auto Test", AutoPaths.autoTest);
+    autoPaths.put("Red Left drive Aim", AutoPaths.autoREDLeftDriveAim);
+    autoPaths.put("BlueLeft", AutoPaths.autoBLUELeftDriveAim );//rename
+    autoPaths.put("RedMiddle", AutoPaths.autoREDMiddleDriveAim); //renmae
+    autoPaths.put("BlueMiddle", AutoPaths.autoBLUEMiddleDriveAim);
+    autoPaths.put("RedRight", AutoPaths.autoREDRightDriveAim);
+    autoPaths.put("BlueRight", AutoPaths.autoBLUERightDriveAim );
+
 
     for(String autoPathName: autoPaths.keySet()){
       m_chooser.addOption(autoPathName, autoPathName);
@@ -202,12 +193,10 @@ public class Robot extends TimedRobot {
       if (driveTrain.squareComplete()) {
         goToNextState();
       }
-    } /* else if (currentAction == AutoAction.AIM) {
-      arm.aim();
-      if (arm.aimComplete()) {
+    } else if (currentStep.getAction() == AutoAction.SHOOT) {
+      //connect to noteaction state machine
         goToNextState();
-      } 
-    }*/
+    }
   }
 
   /** This function is called once when teleop is enabled. */
@@ -215,7 +204,7 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     driveTrain.resetEncoders();
     noteSystem.noteSystemTeleopInit();
-    noteSystem.noteSystemSetUpPid();
+    //noteSystem.noteSystemSetUpPid();
   }
 
   /** This function is called periodically during operator control. */
@@ -235,7 +224,7 @@ public class Robot extends TimedRobot {
     }
 
     noteSystem.noteSystemUpdate();
-    noteSystem.shooterDistance();
+    //noteSystem.shooterDistance();
     climber.climb();
   }
 

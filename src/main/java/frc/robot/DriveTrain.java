@@ -226,8 +226,7 @@ public class DriveTrain {
     
     public void autoDrive() {
         driveDifference = targetDistance - getFrontLeftEncoder();
-        double speed = 0.15; //will likely change
-        speed = speed * (driveDifference/driveDifference);
+        double speed = 0; //will likely change
 
         // if (driveDifference < Constants.SLOWING_DISTANCE) { // magic number >:( -NC
         //     speed = 0.2;
@@ -237,9 +236,11 @@ public class DriveTrain {
 
         if (driveDifference < Constants.DISTANCE_TOLERANCE && driveDifference > -Constants.DISTANCE_TOLERANCE) {
             speed = 0;
-        } else if (driveDifference > 0 && Math.abs(getFrontLeftEncoder()) > 5) {
+        // } else if (Math.abs(getFrontLeftEncoder()) < 5) {
+        //     speed = 0.15;
+        } else if (driveDifference > 0) { //  && Math.abs(getFrontLeftEncoder()) > 5
             speed = 0.0075 * Math.abs(driveDifference) + 0.05;
-        } else if (driveDifference < 0 && Math.abs(getFrontLeftEncoder()) > 5) {
+        } else if (driveDifference < 0) { //  && Math.abs(getFrontLeftEncoder()) > 5
             speed = -0.0075 * Math.abs(driveDifference) - 0.05;
         }
         robotDrive.driveCartesian(speed, 0, 0);
