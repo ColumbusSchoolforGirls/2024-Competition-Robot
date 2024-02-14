@@ -23,13 +23,13 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class NoteSystem {
-    //private SparkPIDController m_shooterPidController;
-    //private SparkPIDController m_intakePidController;
+    private SparkPIDController m_shooterPidController;
+    private SparkPIDController m_intakePidController;
 
     // limit switch not color sensor
     private static DigitalInput intakeLimitSwitch = new DigitalInput(Constants.INTAKE_LIMIT_SWITCH_CHANNEL);
     
-    //public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM;
+    public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM;
 
     public Limelight limelight;
 
@@ -40,7 +40,7 @@ public class NoteSystem {
         SmartDashboard.putBoolean("Note Detected", false);
     }
 
-    private boolean isNoteDetected() {
+    public boolean isNoteDetected() {
         boolean note = intakeLimitSwitch.get();
         SmartDashboard.putBoolean("Note Detected?", note); //green box if it is detected
         return note;
@@ -86,14 +86,13 @@ public class NoteSystem {
         //     shootMotor.set(0);
         // } 
 
-
         System.out.println(state.name());
         if (state == NoteAction.STOPPED) {
             holdMotor.set(0);
-            shootMotor.set(0);
-            intakeMotor.set(0);
-            //m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
-            //m_intakePidController.setReference(0, CANSparkMax.ControlType.kVelocity);
+            // shootMotor.set(0);
+            // intakeMotor.set(0);
+            m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
+            m_intakePidController.setReference(0, CANSparkMax.ControlType.kVelocity);
             if (aux.getLeftBumper()) {
                 state = NoteAction.INTAKE;
             } else if (aux.getRightBumper()) {
@@ -102,31 +101,31 @@ public class NoteSystem {
                 state = NoteAction.REVERSEINTAKE;   
             }
         } else if (state == NoteAction.INTAKE) {
-            holdMotor.set(-0.2); //will probably change?
-            intakeMotor.set(-0.4);
-            //m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
-            //m_intakePidController.setReference(3000, CANSparkMax.ControlType.kVelocity); //will change with testing
+            // holdMotor.set(-0.2); //will probably change?
+            // intakeMotor.set(-0.4);
+            m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
+            m_intakePidController.setReference(Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity); //will change with testing
             if (aux.getLeftBumperReleased()) {
                 state = NoteAction.STOPPED;
-            } //else if (isNoteDetected()) { //color is detected
+            } //else if (isNoteDetected()) { //limit switch is pressed
                 //state = NoteAction.HOLD;
             //}
         } else if (state == NoteAction.REVERSEINTAKE) { //FROM STOPPED OR HOLD
             holdMotor.set(0.2); //will probably change?
-            shootMotor.set(0);
-            intakeMotor.set(0.2);
-            //m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
-            //m_intakePidController.setReference(-3000, CANSparkMax.ControlType.kVelocity); //will change with testing
+            // shootMotor.set(0);
+            // intakeMotor.set(0.2);
+            m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
+            m_intakePidController.setReference(-Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity); //will change with testing
             if (aux.getXButtonReleased()) {
                 state = NoteAction.STOPPED;
             }
         } 
         else if (state == NoteAction.HOLD) {
             holdMotor.set(0);
-            intakeMotor.set(0);
-            shootMotor.set(0);
-            //m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
-            //m_intakePidController.setReference(0, CANSparkMax.ControlType.kVelocity);
+            // intakeMotor.set(0);
+            // shootMotor.set(0);
+            m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
+            m_intakePidController.setReference(0, CANSparkMax.ControlType.kVelocity);
             if (aux.getRightBumper()) {
                 state = NoteAction.REV_UP;
             } else if (aux.getLeftBumperReleased()) { //in case you rev-up w/o a note (notesystem: cant hold->intake so INSTEAD hold->stopped->intake to try again)
@@ -136,10 +135,10 @@ public class NoteSystem {
             }
         } else if (state == NoteAction.REV_UP) {
             holdMotor.set(0);
-            shootMotor.set(-0.2);
-            intakeMotor.set(-0.2);
-            //m_shooterPidController.setReference(3000, CANSparkMax.ControlType.kVelocity);
-            //m_intakePidController.setReference(3000, CANSparkMax.ControlType.kVelocity);
+            // shootMotor.set(-0.2);
+            // intakeMotor.set(-0.2);
+            m_shooterPidController.setReference(Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
+            m_intakePidController.setReference(Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity);
             //rev up shooter motor and intake motor
             if (aux.getRightBumperReleased()) {
                 state = NoteAction.HOLD;
@@ -148,10 +147,10 @@ public class NoteSystem {
             }
         } else if (state == NoteAction.SHOOT) {
             holdMotor.set(0.2); //will probably need to change
-            shootMotor.set(-0.2);
-            intakeMotor.set(-0.2);
-            //m_shooterPidController.setReference(3000, CANSparkMax.ControlType.kVelocity); //will change
-            //m_intakePidController.setReference(3000, CANSparkMax.ControlType.kVelocity); //will change
+            // shootMotor.set(-0.2);
+            // intakeMotor.set(-0.2);
+            m_shooterPidController.setReference(Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity); //will change
+            m_intakePidController.setReference(Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity); //will change
             if (aux.getBButtonReleased()) {
                 state = NoteAction.STOPPED;
                 //possibly use time
@@ -162,32 +161,32 @@ public class NoteSystem {
 
     public void noteSystemSetUpPid() {
 
-        //m_shooterPidController = shootMotor.getPIDController();
-        //m_intakePidController = intakeMotor.getPIDController();
+        m_shooterPidController = shootMotor.getPIDController();
+        m_intakePidController = intakeMotor.getPIDController();
 
-        // PID coefficients
-        // kP = 1; //6e -5 
-        // kI = 0;
-        // kD = 0; 
-        // kIz = 0; 
-        // kFF = 0.000015; 
-        // kMaxOutput = 1; 
-        // kMinOutput = -1;
-        // maxRPM = 5700;
+        //PID coefficients
+        kP = 0.00015; //needs to be a low number, was 1 that was probably the problem
+        kI = 0;
+        kD = 0; 
+        kIz = 0; 
+        kFF = 0.000172; //FF is driving force
+        kMaxOutput = 1; 
+        kMinOutput = -1;
+        maxRPM = 5700;
     
-        // set PID coefficients
-        // m_shooterPidController.setP(kP);
-        // m_shooterPidController.setI(kI);
-        // m_shooterPidController.setD(kD);
-        // m_shooterPidController.setIZone(kIz);
-        // m_shooterPidController.setFF(kFF);
-        // m_shooterPidController.setOutputRange(kMinOutput, kMaxOutput);
-        // m_intakePidController.setP(kP);
-        // m_intakePidController.setI(kI);
-        // m_intakePidController.setD(kD);
-        // m_intakePidController.setIZone(kIz);
-        // m_intakePidController.setFF(kFF);
-        // m_intakePidController.setOutputRange(kMinOutput, kMaxOutput);
+        //set PID coefficients
+        m_shooterPidController.setP(kP);
+        m_shooterPidController.setI(kI);
+        m_shooterPidController.setD(kD);
+        m_shooterPidController.setIZone(kIz);
+        m_shooterPidController.setFF(kFF);
+        m_shooterPidController.setOutputRange(kMinOutput, kMaxOutput);
+        m_intakePidController.setP(kP);
+        m_intakePidController.setI(kI);
+        m_intakePidController.setD(kD);
+        m_intakePidController.setIZone(kIz);
+        m_intakePidController.setFF(kFF);
+        m_intakePidController.setOutputRange(kMinOutput, kMaxOutput);
     }
         /*if () {
             m_intakePidController.setReference(setPointIntake, CANSparkMax.ControlType.kVelocity);
@@ -207,8 +206,8 @@ public class NoteSystem {
         //System.out.println("Trigger value 1:" + aux.getLeftY());
         //System.out.println("Trigger value 2:"+ aux.getRightY());
 
-        // limelight stuff to calculate distance with april tags
 
+    // limelight stuff to calculate distance with april tags
     public void shooterDistance() {
         double targetOffsetAngle_Vertical = limelight.ty.getDouble(0.0); // getting the vertical angle that the
                                                                          // limelight is off from the april tag
@@ -231,5 +230,5 @@ public class NoteSystem {
 
     // // mech will decide locking mechanism so arm can stop at multiple angles --> did not happen :((((((((((( only one angle allowed
 
-    // // add brake
+    // // add brake -> brake????
 }

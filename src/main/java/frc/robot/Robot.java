@@ -6,6 +6,8 @@ package frc.robot;
 
 import java.util.HashMap;
 
+import com.revrobotics.SparkPIDController;
+
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -42,6 +44,7 @@ public class Robot extends TimedRobot {
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
   int state; //state for state machine
+  int i; //inside of state machine for delaying end times on SHOOT
 
 
 
@@ -156,8 +159,7 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    noteSystem.noteSystemUpdate();
-    int i = 0;
+    noteSystem.noteSystemUpdate(); //using NoteSystem state machine in auto state machine
 
     /* switch (m_autoSelected) {
       case kCustomAuto:
@@ -197,31 +199,25 @@ public class Robot extends TimedRobot {
       if (driveTrain.squareComplete()) {
         goToNextState();
       }
+    } else if (currentStep.getAction() == AutoAction.INTAKE) {
+      //connect to noteaction state machine
+      driveTrain.robotDrive.driveCartesian(0.01, 0, 0); //drives forward slightly while intaking
+      noteSystem.state = NoteAction.INTAKE;
+      if (noteSystem.isNoteDetected() || noteSystem.state == NoteAction.HOLD) { //rpm is set at 3000 in Constants.INTAKE_RPM
+        noteSystem.state = NoteAction.HOLD;
+        goToNextState();
+      }  
     } else if (currentStep.getAction() == AutoAction.SHOOT) {
       //connect to noteaction state machine
       noteSystem.state = NoteAction.REV_UP;
-      if (i > 20) { //make it run 300 times, like a wait() w/o systemTime
+      if (noteSystem.shooterEncoder.getVelocity() > 2800 && noteSystem.intakeEncoder.getVelocity() > 2800) { //is set at 3000 in NoteSystem
         noteSystem.state = NoteAction.SHOOT;
-      }  
-      if (i > 26) {
+        
+      if (!noteSystem.isNoteDetected()) { //might stop too suddenly, how to delay
         noteSystem.state = NoteAction.STOPPED;
-      }
-      i++;  
-      if (noteSystem.state == NoteAction.STOPPED) {
         goToNextState();
-        i = 0;
-      }
-    } else if (currentStep.getAction() == AutoAction.INTAKE) {
-      //connect to noteaction state machine
-      noteSystem.state = NoteAction.INTAKE;
-      if (i > 6) { //make it run 300 times, like a wait() w/o systemTime
-        noteSystem.state = NoteAction.HOLD;
       }  
-      i++;  
-      if (noteSystem.state == NoteAction.HOLD) {
-        goToNextState();
-        i = 0;
-      }
+      }  
     }
   }
 
