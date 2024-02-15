@@ -54,10 +54,10 @@ public class NoteSystem {
     public WPI_TalonSRX holdMotor = new WPI_TalonSRX(10);
 
     public static XboxController aux = new XboxController(1); // 1 is the zux controller - oml "zux" can we rename aux to that
-
+    
     public RelativeEncoder shooterEncoder = shootMotor.getEncoder();
     public RelativeEncoder intakeEncoder = intakeMotor.getEncoder();
-;
+
 
     enum NoteAction { 
         STOPPED, INTAKE, HOLD, REV_UP, SHOOT, REVERSEINTAKE 
@@ -70,7 +70,7 @@ public class NoteSystem {
     }
 
     public void noteSystemUpdate() {
-        // //FOR TEST: CHANGE
+        // //FOR TESTING: CHANGE
         // if (aux.getLeftBumper()) {//intake
         //     intakeMotor.set(0.6);
         // } else if (aux.getRightBumper()) {//shoot
@@ -86,11 +86,14 @@ public class NoteSystem {
         //     shootMotor.set(0);
         // } 
 
+        m_shooterPidController = shootMotor.getPIDController();
+        m_intakePidController = intakeMotor.getPIDController();
+
         System.out.println(state.name());
         if (state == NoteAction.STOPPED) {
             holdMotor.set(0);
             // shootMotor.set(0);
-            // intakeMotor.set(0);
+            // intakeMotor.set(0); - for testing
             m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
             m_intakePidController.setReference(0, CANSparkMax.ControlType.kVelocity);
             if (aux.getLeftBumper()) {
@@ -101,14 +104,14 @@ public class NoteSystem {
                 state = NoteAction.REVERSEINTAKE;   
             }
         } else if (state == NoteAction.INTAKE) {
-            // holdMotor.set(-0.2); //will probably change?
-            // intakeMotor.set(-0.4);
+            // holdMotor.set(-0.2); 
+            // intakeMotor.set(-0.4); - for testing 
             m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
             m_intakePidController.setReference(Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity); //will change with testing
             if (aux.getLeftBumperReleased()) {
                 state = NoteAction.STOPPED;
-            } //else if (isNoteDetected()) { //limit switch is pressed
-                //state = NoteAction.HOLD;
+            } else if (isNoteDetected()) { //limit switch is pressed - need to comment out when testing until we get limit switch
+                state = NoteAction.HOLD; 
             //}
         } else if (state == NoteAction.REVERSEINTAKE) { //FROM STOPPED OR HOLD
             holdMotor.set(0.2); //will probably change?
@@ -119,8 +122,7 @@ public class NoteSystem {
             if (aux.getXButtonReleased()) {
                 state = NoteAction.STOPPED;
             }
-        } 
-        else if (state == NoteAction.HOLD) {
+        } else if (state == NoteAction.HOLD) {
             holdMotor.set(0);
             // intakeMotor.set(0);
             // shootMotor.set(0);
@@ -128,8 +130,8 @@ public class NoteSystem {
             m_intakePidController.setReference(0, CANSparkMax.ControlType.kVelocity);
             if (aux.getRightBumper()) {
                 state = NoteAction.REV_UP;
-            } else if (aux.getLeftBumperReleased()) { //in case you rev-up w/o a note (notesystem: cant hold->intake so INSTEAD hold->stopped->intake to try again)
-                state = NoteAction.STOPPED; //feels a little broken please check
+            } //else if (aux.getLeftBumperReleased()) { //in case you rev-up w/o a note (notesystem: cant hold->intake so INSTEAD hold->stopped->intake to try again)
+                //state = NoteAction.STOPPED; //feels a little broken please check - I dont think this is necessary because if you dont have a note you wont get to the hold state
             } else if (aux.getXButton()) {
                 state = NoteAction.REVERSEINTAKE;
             }
@@ -158,7 +160,7 @@ public class NoteSystem {
             }
         }
     }
-
+    
     public void noteSystemSetUpPid() {
 
         m_shooterPidController = shootMotor.getPIDController();

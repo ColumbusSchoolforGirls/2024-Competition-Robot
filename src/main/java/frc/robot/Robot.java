@@ -9,6 +9,7 @@ import java.util.HashMap;
 import com.revrobotics.SparkPIDController;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.NoteSystem.NoteAction;
@@ -205,15 +206,15 @@ public class Robot extends TimedRobot {
       noteSystem.state = NoteAction.INTAKE;
       if (noteSystem.isNoteDetected() || noteSystem.state == NoteAction.HOLD) { //rpm is set at 3000 in Constants.INTAKE_RPM
         noteSystem.state = NoteAction.HOLD;
-        goToNextState();
+        goToNextState(); //I am worried that since the noteSystem intake autoaction has an isNoteDetected function as well, an error may occur
       }  
     } else if (currentStep.getAction() == AutoAction.SHOOT) {
       //connect to noteaction state machine
       noteSystem.state = NoteAction.REV_UP;
       if (noteSystem.shooterEncoder.getVelocity() > 2800 && noteSystem.intakeEncoder.getVelocity() > 2800) { //is set at 3000 in NoteSystem
         noteSystem.state = NoteAction.SHOOT;
-        
-      if (!noteSystem.isNoteDetected()) { //might stop too suddenly, how to delay
+        double startTime = Timer.getFPGATimestamp();
+      if (!noteSystem.isNoteDetected() && (Timer.getFPGATimestamp() - startTime) > 2.0) { //might stop too suddenly, how to delay - added delay - LJ :)
         noteSystem.state = NoteAction.STOPPED;
         goToNextState();
       }  
