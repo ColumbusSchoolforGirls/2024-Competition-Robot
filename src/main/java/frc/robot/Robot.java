@@ -8,11 +8,15 @@ import java.util.HashMap;
 
 import com.revrobotics.SparkPIDController;
 
+import edu.wpi.first.units.Time;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.NoteSystem.NoteAction;
+import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkMax;
+
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -200,26 +204,29 @@ public class Robot extends TimedRobot {
       if (driveTrain.squareComplete()) {
         goToNextState();
       }
-    } else if (currentStep.getAction() == AutoAction.INTAKE) {
+    } /*else if (currentStep.getAction() == AutoAction.INTAKE) {
       //connect to noteaction state machine
       driveTrain.robotDrive.driveCartesian(0.01, 0, 0); //drives forward slightly while intaking
-      noteSystem.state = NoteAction.INTAKE;
+      //noteSystem.state = NoteAction.INTAKE;
+      noteSystem.m_intakePidController.setReference(Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity);
+
       if (noteSystem.isNoteDetected() || noteSystem.state == NoteAction.HOLD) { //rpm is set at 3000 in Constants.INTAKE_RPM
         noteSystem.state = NoteAction.HOLD;
         goToNextState(); //I am worried that since the noteSystem intake autoaction has an isNoteDetected function as well, an error may occur
       }  
-    } else if (currentStep.getAction() == AutoAction.SHOOT) {
+    }*/ else if (currentStep.getAction() == AutoAction.SHOOT) {
       //connect to noteaction state machine
       noteSystem.state = NoteAction.REV_UP;
-      if (noteSystem.shooterEncoder.getVelocity() > 2800 && noteSystem.intakeEncoder.getVelocity() > 2800) { //is set at 3000 in NoteSystem
-        noteSystem.state = NoteAction.SHOOT;
-        double startTime = Timer.getFPGATimestamp();
-      if (!noteSystem.isNoteDetected() && (Timer.getFPGATimestamp() - startTime) > 2.0) { //might stop too suddenly, how to delay - added delay - LJ :)
-        noteSystem.state = NoteAction.STOPPED;
+      if (noteSystem.state == NoteAction.STOPPED) {
         goToNextState();
-      }  
-      }  
-    }
+      }
+    } else if (currentStep.getAction() == AutoAction.DRIVEINTAKE) {
+      //simultaneously drive forward and intake
+      if (noteSystem.isNoteDetected()) {
+        noteSystem.setStopped();
+        goToNextState();
+      }
+    } 
   }
 
   /** This function is called once when teleop is enabled. */

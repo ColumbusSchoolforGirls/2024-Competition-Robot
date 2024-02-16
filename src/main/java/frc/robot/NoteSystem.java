@@ -19,12 +19,13 @@ import com.revrobotics.SparkPIDController;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class NoteSystem {
-    private SparkPIDController m_shooterPidController;
-    private SparkPIDController m_intakePidController;
+    public SparkPIDController m_shooterPidController;
+    public SparkPIDController m_intakePidController;
 
     // limit switch not color sensor
     private static DigitalInput intakeLimitSwitch = new DigitalInput(Constants.INTAKE_LIMIT_SWITCH_CHANNEL);
@@ -69,6 +70,31 @@ public class NoteSystem {
         state = NoteAction.STOPPED;
     }
 
+    public void setStopped() {
+        holdMotor.set(0);
+        m_intakePidController.setReference(0, CANSparkMax.ControlType.kVelocity);
+        m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
+    }
+
+    public void setIntake() {
+        m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
+        m_intakePidController.setReference(Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity);
+        holdMotor.set(-0.2);
+    }
+
+    public void setRevUp() {
+        holdMotor.set(0);
+        m_shooterPidController.setReference(Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
+        m_intakePidController.setReference(Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity);
+    }
+
+    public void setShoot() {
+        holdMotor.set(0.2); //will probably need to change
+        m_shooterPidController.setReference(Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity); //will change
+        m_intakePidController.setReference(Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity); //will change
+            
+    }
+
     public void noteSystemUpdate() {
         // //FOR TESTING: CHANGE
         // if (aux.getLeftBumper()) {//intake
@@ -91,11 +117,7 @@ public class NoteSystem {
 
         System.out.println(state.name());
         if (state == NoteAction.STOPPED) {
-            holdMotor.set(0);
-            // shootMotor.set(0);
-            // intakeMotor.set(0); - for testing
-            m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
-            m_intakePidController.setReference(0, CANSparkMax.ControlType.kVelocity);
+            setStopped();
             if (aux.getLeftBumper()) {
                 state = NoteAction.INTAKE;
             } else if (aux.getRightBumper()) {
@@ -106,8 +128,8 @@ public class NoteSystem {
         } else if (state == NoteAction.INTAKE) {
             // holdMotor.set(-0.2); 
             // intakeMotor.set(-0.4); - for testing 
-            m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
-            m_intakePidController.setReference(Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity); //will change with testing
+            //will change with testing
+            setIntake();
             if (aux.getLeftBumperReleased()) {
                 state = NoteAction.STOPPED;
             } else if (isNoteDetected()) { //limit switch is pressed - need to comment out when testing until we get limit switch
@@ -123,11 +145,7 @@ public class NoteSystem {
                 state = NoteAction.STOPPED;
             }
         } else if (state == NoteAction.HOLD) {
-            holdMotor.set(0);
-            // intakeMotor.set(0);
-            // shootMotor.set(0);
-            m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
-            m_intakePidController.setReference(0, CANSparkMax.ControlType.kVelocity);
+            setStopped();
             if (aux.getRightBumper()) {
                 state = NoteAction.REV_UP;
             } //else if (aux.getLeftBumperReleased()) { //in case you rev-up w/o a note (notesystem: cant hold->intake so INSTEAD hold->stopped->intake to try again)
@@ -136,27 +154,31 @@ public class NoteSystem {
                 state = NoteAction.REVERSEINTAKE;
             }
         } else if (state == NoteAction.REV_UP) {
-            holdMotor.set(0);
-            // shootMotor.set(-0.2);
-            // intakeMotor.set(-0.2);
-            m_shooterPidController.setReference(Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
-            m_intakePidController.setReference(Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity);
-            //rev up shooter motor and intake motor
+            setRevUp();
             if (aux.getRightBumperReleased()) {
                 state = NoteAction.HOLD;
-            } else if (aux.getBButton()) {
-                state  = NoteAction.SHOOT;
+            } else if (shooterEncoder.getVelocity() > 2800 && intakeEncoder.getVelocity() > 2800) {
+                state = NoteAction.SHOOT;
             }
+            //else if (aux.getBButton()) {
+                //state  = NoteAction.SHOOT; 
+            //}
         } else if (state == NoteAction.SHOOT) {
+            setShoot();
+            double startTime = Timer.getFPGATimestamp();
             holdMotor.set(0.2); //will probably need to change
             // shootMotor.set(-0.2);
             // intakeMotor.set(-0.2);
             m_shooterPidController.setReference(Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity); //will change
             m_intakePidController.setReference(Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity); //will change
-            if (aux.getBButtonReleased()) {
-                state = NoteAction.STOPPED;
+            //if (aux.getBButtonReleased()) {
+                //state = NoteAction.STOPPED;
                 //possibly use time
                 //driver needs to hold until note is released 
+            //}
+    
+            if (Timer.getFPGATimestamp() - startTime > 2.0) {
+                state = NoteAction.STOPPED;
             }
         }
     }
@@ -167,11 +189,11 @@ public class NoteSystem {
         m_intakePidController = intakeMotor.getPIDController();
 
         //PID coefficients
-        kP = 0.00015; //needs to be a low number, was 1 that was probably the problem
+        kP = 0.00015; //needs to be a low number, was 1 that was probably the problem - slay!
         kI = 0;
         kD = 0; 
         kIz = 0; 
-        kFF = 0.000172; //FF is driving force
+        kFF = 0.000172; //FF is driving force - thx I was wondering what it stood for
         kMaxOutput = 1; 
         kMinOutput = -1;
         maxRPM = 5700;

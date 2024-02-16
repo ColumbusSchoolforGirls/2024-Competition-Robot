@@ -17,7 +17,7 @@ public class AutoPaths{
     new AutoStep(AutoAction.DRIVEINTAKE, 0),
     new AutoStep(AutoAction.TURN, 180),
     new AutoStep(AutoAction.DRIVE, 40),
-    new AutoStep(AutoAction.SHOOT, 0)
+    new AutoStep(AutoAction.SHOOT, 0),
   };
 
   public static AutoStep[] autoBLUELeftDriveAim = {
@@ -70,8 +70,8 @@ public static AutoStep[] autoREDMiddleDriveAim = {
     new AutoStep(AutoAction.DRIVE, 70),
     new AutoStep(AutoAction.DRIVEINTAKE, 0),
     new AutoStep(AutoAction.TURN, -100),
-  //  new AutoStep(AutoAction.DRIVE, 10),
-  //   new AutoStep(AutoAction.SHOOT, 0)
+    new AutoStep(AutoAction.DRIVE, 10),
+    new AutoStep(AutoAction.SHOOT, 0)
   };
 
 
