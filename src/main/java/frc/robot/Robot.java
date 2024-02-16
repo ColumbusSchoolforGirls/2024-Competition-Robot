@@ -75,12 +75,20 @@ public class Robot extends TimedRobot {
     climber = new Climber(noteSystem);
 
     //autopath options for dashboard
-    autoPaths.put("Red Left drive Aim", AutoPaths.autoREDLeftDriveAim);
-    autoPaths.put("BlueLeft", AutoPaths.autoBLUELeftDriveAim );//rename
-    autoPaths.put("RedMiddle", AutoPaths.autoREDMiddleDriveAim); //renmae
-    autoPaths.put("BlueMiddle", AutoPaths.autoBLUEMiddleDriveAim);
-    autoPaths.put("RedRight", AutoPaths.autoREDRightDriveAim);
-    autoPaths.put("BlueRight", AutoPaths.autoBLUERightDriveAim );
+    autoPaths.put("Red Left Main", AutoPaths.autoREDLeftMain);
+    autoPaths.put("Blue Left Main", AutoPaths.autoBLUELeftMain);//rename - done!
+    autoPaths.put("Red Middle Main", AutoPaths.autoREDMiddleMain); //renmae - done!
+    autoPaths.put("Blue Middle Main", AutoPaths.autoBLUEMiddleMain);
+    autoPaths.put("Red Right Main", AutoPaths.autoREDRightMain);
+    autoPaths.put("Blue Right Main", AutoPaths.autoBLUERightMain);
+
+    autoPaths.put("Red Left Drive", AutoPaths.autoREDLeftDrive);
+    autoPaths.put("Blue Left Drive", AutoPaths.autoBLUELeftDrive);
+    autoPaths.put("Red Middle Drive", AutoPaths.autoREDMiddleDrive); 
+    autoPaths.put("Blue Middle Drive", AutoPaths.autoBLUEMiddleDrive);
+    autoPaths.put("Red Right Drive", AutoPaths.autoREDRightDrive);
+    autoPaths.put("Blue Right Drive", AutoPaths.autoBLUERightDrive);
+
 
 
     for(String autoPathName: autoPaths.keySet()){
