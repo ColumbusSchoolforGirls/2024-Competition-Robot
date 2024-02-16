@@ -212,25 +212,17 @@ public class Robot extends TimedRobot {
       if (driveTrain.squareComplete()) {
         goToNextState();
       }
-    } /*else if (currentStep.getAction() == AutoAction.INTAKE) {
-      //connect to noteaction state machine
-      driveTrain.robotDrive.driveCartesian(0.01, 0, 0); //drives forward slightly while intaking
-      //noteSystem.state = NoteAction.INTAKE;
-      noteSystem.m_intakePidController.setReference(Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity);
-
-      if (noteSystem.isNoteDetected() || noteSystem.state == NoteAction.HOLD) { //rpm is set at 3000 in Constants.INTAKE_RPM
-        noteSystem.state = NoteAction.HOLD;
-        goToNextState(); //I am worried that since the noteSystem intake autoaction has an isNoteDetected function as well, an error may occur
-      }  
-    }*/ else if (currentStep.getAction() == AutoAction.SHOOT) {
+    } else if (currentStep.getAction() == AutoAction.SHOOT) {
       //connect to noteaction state machine
       noteSystem.state = NoteAction.REV_UP;
       if (noteSystem.state == NoteAction.STOPPED) {
         goToNextState();
       }
     } else if (currentStep.getAction() == AutoAction.DRIVEINTAKE) {
-      //simultaneously drive forward and intake
-      if (noteSystem.isNoteDetected()) {
+      //simultaneously drive forward and intake - need to do - LJ
+      noteSystem.setIntake();
+      driveTrain.autoDrive();
+      if (driveTrain.driveComplete()) { //decided to do this instead of note detected because if it accidentally does not pick up the note it might cause issues
         noteSystem.setStopped();
         goToNextState();
       }

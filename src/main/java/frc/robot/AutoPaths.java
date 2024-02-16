@@ -19,7 +19,7 @@ public static AutoStep[] autoREDLeftMain = {
   new AutoStep(AutoAction.SHOOT, 0)
 };
 
-public static AutoStep[] autoREDLeftDrive = {
+public static AutoStep[] autoREDLeftDrive = { //?
   new AutoStep(AutoAction.DRIVE, -60),
   new AutoStep(AutoAction.TURN, -105),
   new AutoStep(AutoAction.DRIVE, 120)
@@ -44,27 +44,27 @@ public static AutoStep[] autoBLUELeftMain = {
 
 public static AutoStep[] autoREDMiddleMain = {
   new AutoStep(AutoAction.SHOOT, 0),
-  new AutoStep(AutoAction.DRIVE, -60),
+  new AutoStep(AutoAction.DRIVE, -40), //?
   new AutoStep(AutoAction.TURN, -180),
-  new AutoStep(AutoAction.DRIVEINTAKE, 30),
+  new AutoStep(AutoAction.DRIVEINTAKE, 30), //need to change w testing 
   new AutoStep(AutoAction.TURN, 180),
-  new AutoStep(AutoAction.DRIVE, 0),
-  new AutoStep(AutoAction.SHOOT, 0)
+  new AutoStep(AutoAction.DRIVE, 60),
+  new AutoStep(AutoAction.SHOOT, 0),
 };
 
   public static AutoStep[] autoREDMiddleDrive = { // figure out later
   new AutoStep(AutoAction.DRIVE, 0),
   new AutoStep(AutoAction.TURN, 0),
-  new AutoStep(AutoAction.DRIVE, 0)
+  //new AutoStep(AutoAction.DRIVE, 0)
 };
 
 public static AutoStep[] autoBLUEMiddleMain = {
   new AutoStep(AutoAction.SHOOT, 0),
   new AutoStep(AutoAction.DRIVE, -40),
   new AutoStep(AutoAction.TURN, -180),
-  new AutoStep(AutoAction.DRIVEINTAKE, 0),
+  new AutoStep(AutoAction.DRIVEINTAKE, 30), //need to change with testing
   new AutoStep(AutoAction.TURN, 180),
-  new AutoStep(AutoAction.DRIVE, 0),
+  new AutoStep(AutoAction.DRIVE, 40),
   new AutoStep(AutoAction.SHOOT, 0)
 };
 
@@ -109,6 +109,8 @@ public static AutoStep[] autoBLUERightMain = {
   new AutoStep(AutoAction.TURN, 130),
   new AutoStep(AutoAction.DRIVE, 150)
 };
+
+//old paths
 
 //  public static AutoStep[] autoREDLeftDriveAim = {
 //     new AutoStep(AutoAction.SHOOT, 0), 
