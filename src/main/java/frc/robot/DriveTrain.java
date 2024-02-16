@@ -192,7 +192,6 @@ public class DriveTrain {
             if(frontLeftEncoder.getVelocity() < 0.03){ //to prevent skidding bc of turning before drive is complete
                 return true;
             } 
-
         }
         return false;
     }
@@ -251,11 +250,7 @@ public class DriveTrain {
     }
 
     public void square() { // turn robot to 0... straight assuming the robot is lined up with the goal to start
-      // call the setBrakeMode() - NC
-      frontLeft.setIdleMode(IdleMode.kBrake);
-      backLeft.setIdleMode(IdleMode.kBrake);
-      frontRight.setIdleMode(IdleMode.kBrake);
-      backRight.setIdleMode(IdleMode.kBrake);
+      setBrakeMode();
 
       gyroDifference = Robot.gyroAngle % 360; //divides over and over again until there is a remainder
                                               // well not really but what ever floats your boat :) -NC
