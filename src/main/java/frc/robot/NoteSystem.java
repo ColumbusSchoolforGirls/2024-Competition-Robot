@@ -16,6 +16,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
+import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -36,13 +37,15 @@ public class NoteSystem {
 
     NoteAction state;
 
+    double startTime;
+
     public NoteSystem(Limelight limelight) {
         this.limelight = limelight;
         SmartDashboard.putBoolean("Note Detected", false);
     }
 
     public boolean isNoteDetected() {
-        boolean note = intakeLimitSwitch.get();
+        boolean note = !intakeLimitSwitch.get();
         SmartDashboard.putBoolean("Note Detected?", note); //green box if it is detected
         return note;
     }
@@ -70,6 +73,11 @@ public class NoteSystem {
         state = NoteAction.STOPPED;
     }
 
+    public void setCoastMode() {
+        shootMotor.setIdleMode(IdleMode.kCoast);
+        intakeMotor.setIdleMode(IdleMode.kCoast);
+    }
+
     public void setStopped() {
         holdMotor.set(0);
         m_intakePidController.setReference(0, CANSparkMax.ControlType.kVelocity);
@@ -93,6 +101,12 @@ public class NoteSystem {
         m_shooterPidController.setReference(Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity); //will change
         m_intakePidController.setReference(Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity); //will change
             
+    }
+
+    public void setReverseIntake() {
+        holdMotor.set(0.2);
+        m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity); //will change
+        m_intakePidController.setReference(-Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity);
     }
 
     public void noteSystemUpdate() {
@@ -126,57 +140,38 @@ public class NoteSystem {
                 state = NoteAction.REVERSEINTAKE;   
             }
         } else if (state == NoteAction.INTAKE) {
-            // holdMotor.set(-0.2); 
-            // intakeMotor.set(-0.4); - for testing 
-            //will change with testing
             setIntake();
             if (aux.getLeftBumperReleased()) {
                 state = NoteAction.STOPPED;
-            } else if (isNoteDetected()) { //limit switch is pressed - need to comment out when testing until we get limit switch
+            } else if (isNoteDetected() || aux.getYButtonPressed()) { //limit switch is pressed - need to comment out when testing until we get limit switch
                 state = NoteAction.HOLD; 
-            //}
         } else if (state == NoteAction.REVERSEINTAKE) { //FROM STOPPED OR HOLD
-            holdMotor.set(0.2); //will probably change?
-            // shootMotor.set(0);
-            // intakeMotor.set(0.2);
-            m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
-            m_intakePidController.setReference(-Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity); //will change with testing
+            setReverseIntake();
             if (aux.getXButtonReleased()) {
                 state = NoteAction.STOPPED;
             }
         } else if (state == NoteAction.HOLD) {
             setStopped();
-            if (aux.getRightBumper()) {
+            if (aux.getRightBumperPressed()) {
                 state = NoteAction.REV_UP;
             } //else if (aux.getLeftBumperReleased()) { //in case you rev-up w/o a note (notesystem: cant hold->intake so INSTEAD hold->stopped->intake to try again)
                 //state = NoteAction.STOPPED; //feels a little broken please check - I dont think this is necessary because if you dont have a note you wont get to the hold state
             } else if (aux.getXButton()) {
                 state = NoteAction.REVERSEINTAKE;
+            } else if (aux.getLeftBumperPressed()) {
+                state = NoteAction.INTAKE;
             }
         } else if (state == NoteAction.REV_UP) {
             setRevUp();
-            if (aux.getRightBumperReleased()) {
-                state = NoteAction.HOLD;
-            } else if (shooterEncoder.getVelocity() > 2800 && intakeEncoder.getVelocity() > 2800) {
+            if (Math.abs(shooterEncoder.getVelocity()) > 2800 && Math.abs(intakeEncoder.getVelocity()) > 2800) {
                 state = NoteAction.SHOOT;
+                startTime = Timer.getFPGATimestamp();
             }
             //else if (aux.getBButton()) {
                 //state  = NoteAction.SHOOT; 
             //}
         } else if (state == NoteAction.SHOOT) {
             setShoot();
-            double startTime = Timer.getFPGATimestamp();
-            holdMotor.set(0.2); //will probably need to change
-            // shootMotor.set(-0.2);
-            // intakeMotor.set(-0.2);
-            m_shooterPidController.setReference(Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity); //will change
-            m_intakePidController.setReference(Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity); //will change
-            //if (aux.getBButtonReleased()) {
-                //state = NoteAction.STOPPED;
-                //possibly use time
-                //driver needs to hold until note is released 
-            //}
-    
             if (Timer.getFPGATimestamp() - startTime > 2.0) {
                 state = NoteAction.STOPPED;
             }

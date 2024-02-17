@@ -113,6 +113,7 @@ public class Robot extends TimedRobot {
     driveTrain.update();
     gyroAngle = driveTrain.getFacingAngle();
     
+    noteSystem.noteSystemSetUpPid();
   }
 
   /**
@@ -130,6 +131,7 @@ public class Robot extends TimedRobot {
     //set arm brake
     driveTrain.resetGyro();
     driveTrain.resetEncoders();
+    noteSystem.setCoastMode();
 
     //print selected auto path
     autoActions = autoPaths.get(m_chooser.getSelected());
@@ -234,7 +236,8 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
     driveTrain.resetEncoders();
     noteSystem.noteSystemTeleopInit();
-    //noteSystem.noteSystemSetUpPid();
+    noteSystem.noteSystemSetUpPid();
+    noteSystem.setCoastMode();
   }
 
   /** This function is called periodically during operator control. */
