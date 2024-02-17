@@ -31,31 +31,13 @@ public class Robot extends TimedRobot {
   public Limelight limelight;
   public NoteSystem noteSystem;
   public Climber climber;
-  public static double gyroAngle;
   //set arm brake?
   
-  // possible auto actions
-
-
-  // dashboard key for each auto path
-  private static final String kAutoDefault = "Default";
-  private static final String kAutoPathMiddle = "Middle";
-  private static final String kAutoPathRight = "Right";
-  private static final String kAutoPathLeft = "Left";
-  private static final String kAutoPathTest = "Testing Sequence";
-  private String m_autoSelected;
-
+  
   //the drop down menu to choose a path on the dashboard
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
   int state; //state for state machine
-  int i; //inside of state machine for delaying end times on SHOOT
-
-
-
-//NOTE EVERYTHING M UST BE DUPLICATED FOR OPPOSITE ALLIANCE BECAUSE ALLIANCES ARE MIRRORED NOT EXACT REPLICAS
-
-
 
   //place holders for chosen path
   AutoStep[] autoActions = {};
@@ -72,7 +54,8 @@ public class Robot extends TimedRobot {
     limelight = new Limelight(driveTrain);
     driveTrain = new DriveTrain(limelight); // PS this rests encoders at initialization
     noteSystem = new NoteSystem(limelight); 
-    climber = new Climber(noteSystem);
+    climber = new Climber();
+    noteSystem.setCoastMode();
 
     //autopath options for dashboard
     autoPaths.put("Red Left Main", AutoPaths.autoREDLeftMain);
@@ -89,12 +72,9 @@ public class Robot extends TimedRobot {
     autoPaths.put("Red Right Drive", AutoPaths.autoREDRightDrive);
     autoPaths.put("Blue Right Drive", AutoPaths.autoBLUERightDrive);
 
-
-
     for(String autoPathName: autoPaths.keySet()){
       m_chooser.addOption(autoPathName, autoPathName);
     }
-
 
     SmartDashboard.putData("Auto choices", m_chooser); //actually puts them on the dashboard after they are added to m_chooser
   }
@@ -111,8 +91,6 @@ public class Robot extends TimedRobot {
 
     //updating smartdashboard values
     driveTrain.update();
-    gyroAngle = driveTrain.getFacingAngle();
-    
     noteSystem.noteSystemSetUpPid();
   }
 
@@ -131,12 +109,11 @@ public class Robot extends TimedRobot {
     //set arm brake
     driveTrain.resetGyro();
     driveTrain.resetEncoders();
-    noteSystem.setCoastMode();
 
     //print selected auto path
     autoActions = autoPaths.get(m_chooser.getSelected());
     System.out.println("Auto selected: " + m_chooser.getSelected());
-    driveTrain.setAuto(); // sets drivetrain to break mode
+    driveTrain.setAuto(); // sets drivetrain to brake mode
     //reset arm encoders
     // set state to -1 (so that it moves to 0 when it starts)
     state = -1;
@@ -165,9 +142,8 @@ public class Robot extends TimedRobot {
       driveTrain.startTurn(currentAction.getValue());
   } else if (currentAction.getAction() == AutoAction.DRIVE) { 
       driveTrain.startDrive(currentAction.getValue());
-  // } /* else if (currentAction == AutoAction.ARM) {
-  //   arm.startArm(currentValue);
-  // } */
+  } else if (currentAction.getAction() == AutoAction.SHOOT) {
+      noteSystem.state = NoteAction.REV_UP;
   }
   }
 
@@ -176,21 +152,11 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {
     noteSystem.noteSystemUpdate(); //using NoteSystem state machine in auto state machine
 
-    /* switch (m_autoSelected) {
-      case kCustomAuto:
-        // Put custom auto code here
-        break;
-      case kDefaultAuto:
-      default:
-        // Put default auto code here
-        break;
-    } */
-
     SmartDashboard.putNumber("Current State", state);
     System.out.println(state);
     // stop robot and finish if at end of auto path
     if (state >= autoActions.length) {
-      driveTrain.robotDrive.driveCartesian(0, 0 , 0);
+      driveTrain.stopDriveTrain();
       return;
     }
 
@@ -209,14 +175,7 @@ public class Robot extends TimedRobot {
       if (driveTrain.driveComplete()) {
         goToNextState();
       }
-    } else if (currentStep.getAction() == AutoAction.SQUARE) {
-      driveTrain.square();
-      if (driveTrain.squareComplete()) {
-        goToNextState();
-      }
     } else if (currentStep.getAction() == AutoAction.SHOOT) {
-      //connect to noteaction state machine
-      noteSystem.state = NoteAction.REV_UP;
       if (noteSystem.state == NoteAction.STOPPED) {
         goToNextState();
       }
@@ -224,7 +183,7 @@ public class Robot extends TimedRobot {
       //simultaneously drive forward and intake - need to do - LJ
       noteSystem.setIntake();
       driveTrain.autoDrive();
-      if (driveTrain.driveComplete()) { //decided to do this instead of note detected because if it accidentally does not pick up the note it might cause issues
+      if (driveTrain.driveComplete() || noteSystem.isNoteDetected()) { //add a time thing! //decided to do this instead of note detected because if it accidentally does not pick up the note it might cause issues
         noteSystem.setStopped();
         goToNextState();
       }
@@ -237,27 +196,16 @@ public class Robot extends TimedRobot {
     driveTrain.resetEncoders();
     noteSystem.noteSystemTeleopInit();
     noteSystem.noteSystemSetUpPid();
-    noteSystem.setCoastMode();
   }
 
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    if (DriveTrain.driveController.getAButton()) {
-      driveTrain.square();
-      //if driveTrain.squareComplete() {
-        //arm.aim();
-      //}
-      /*if arm.aimComplete() {
-        arm.shoot();
-      } */
-    } else {
-      driveTrain.drive(0.5, 0.25, false);
-      driveTrain.setTeleop(); // switches between brake and coast when you press x button
-    }
+    driveTrain.drive(Constants.NORMAL_SPEED, Constants.CRAWL_SPEED, false);
+    driveTrain.setTeleop(); // switches between brake and coast when you press x button
 
     noteSystem.noteSystemUpdate();
-    //noteSystem.shooterDistance();
+    
     climber.climb();
   }
 

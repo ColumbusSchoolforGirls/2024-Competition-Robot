@@ -11,11 +11,17 @@ public final class Constants {
     public static final int BACK_RIGHT_ID = 4;
     public static final double GEAR_RATIO = 12.75;
     public static final int SLOWING_DISTANCE = 10;
+    public static final double NORMAL_SPEED = 0.5;
+    public static final double CRAWL_SPEED = 0.25;
 
     // tolerance (deadzone) for auto
     public static final double TURN_TOLERANCE = 2.0; 
     public static final double DISTANCE_TOLERANCE = 0.1;
     public static final double SQUARE_TOLERANCE = 1.5;
+
+    //climber
+    public static final int LEFT_CLIMBER_ID = 11;
+    public static final int RIGHT_CLIMBER_ID = 12;
 
     //note stuff
     public static final double AUX_DEADZONE = 0.1;
@@ -23,6 +29,6 @@ public final class Constants {
     public static final int INTAKE_RPM = -3000;
     public static final int SHOOTER_RPM = 3000;
     public static final int SHOOTING_VELOCITY = 2800;
-    
+
 }
 

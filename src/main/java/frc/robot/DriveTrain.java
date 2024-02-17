@@ -23,8 +23,6 @@ public class DriveTrain {
     AHRS gyro = new AHRS(SPI.Port.kMXP);
 
     public Limelight limelight;
-
-    boolean brakeMode = true;
     
     // move CAN IDs into a constants -NC --> done 
     public CANSparkMax frontLeft = new CANSparkMax(Constants.FRONT_LEFT_ID, MotorType.kBrushless); 
@@ -117,15 +115,10 @@ public class DriveTrain {
     }
 
     public void setTeleop() {
-        if (brakeMode) {
-            // make into function (call here and in setAuto) - NC --> done - YAY
+        if (driveController.getXButtonPressed()) {
             setBrakeMode();
         } else {
             setCoastMode();
-        }
-
-        if (driveController.getXButtonPressed()) {
-            brakeMode = !brakeMode; //this looks odd and is confusin but it works :>
         }
     }
 
@@ -180,7 +173,7 @@ public class DriveTrain {
         
         // return difference < Constants.TURN_TOLERANCE && difference > -Constants.TURN_TOLERANCE;
         // but this is fine :) 
-        if (difference < Constants.TURN_TOLERANCE && difference > -Constants.TURN_TOLERANCE) {
+        if (Math.abs(difference) < Constants.TURN_TOLERANCE) {
             return true;
         }
         return false;
@@ -213,8 +206,8 @@ public class DriveTrain {
         double rotationSpeed = 0;
         difference = (getFacingAngle() - targetAngle);
 
-        if (difference < Constants.TURN_TOLERANCE && difference > -Constants.TURN_TOLERANCE) {
-            limelight.rotationSpeed = 0;
+        if (Math.abs(difference) < Constants.TURN_TOLERANCE) {
+            rotationSpeed = 0;
         } else if (difference < 0) {
             rotationSpeed = 0.005 * Math.abs(difference) + 0.05;
         } else if (difference > 0) {
@@ -233,7 +226,7 @@ public class DriveTrain {
         //     speed = -0.2;
         // }
 
-        if (driveDifference < Constants.DISTANCE_TOLERANCE && driveDifference > -Constants.DISTANCE_TOLERANCE) {
+        if (Math.abs(driveDifference) < Constants.DISTANCE_TOLERANCE) {
             speed = 0;
         // } else if (Math.abs(getFrontLeftEncoder()) < 5) {
         //     speed = 0.15;
@@ -246,46 +239,10 @@ public class DriveTrain {
         // remove printlines -NC
         //System.out.println("ENCODER INCHES: " + getFrontLeftEncoder());
         //System.out.println("DRIVE DIFFERENCE (DIST FROM TARGET): " + driveDifference);
-
     }
 
-    public void square() { // turn robot to 0... straight assuming the robot is lined up with the goal to start
-      setBrakeMode();
-
-      gyroDifference = Robot.gyroAngle % 360; //divides over and over again until there is a remainder
-                                              // well not really but what ever floats your boat :) -NC
-      if (gyroDifference < 0) {
-        gyroDifference += 360;
-      }
-      
-      if (gyroDifference < Constants.SQUARE_TOLERANCE || gyroDifference > 360 - Constants.SQUARE_TOLERANCE) {
-            robotDrive.driveCartesian(0, 0, 0);
-        } else {
-            if (gyroDifference > 180) {
-                if (gyroDifference > 345) {
-                    robotDrive.driveCartesian(0, 0, 0.070);
-                } else {
-                    robotDrive.driveCartesian(0, 0, 0.2);
-                }
-            } else if (gyroDifference < 180) {
-                if (gyroDifference < 15) {
-                    robotDrive.driveCartesian(0, 0, -0.070);
-                } else {
-                    robotDrive.driveCartesian(0,0, -0.2);
-                }
-            }
-        }
-
+    public void stopDriveTrain() {
+        robotDrive.driveCartesian(0, 0 , 0);
     }
-
-    public boolean squareComplete() {
-        // I don't think this is correct. I think you need to do % 360 first so you get an angle - NC --> done??
-        // between (-360, 360)
-        if(Math.abs(Robot.gyroAngle % 360) < Constants.TURN_TOLERANCE) {
-            return true;
-        }
-        return false;
-    } 
      
-
 }
