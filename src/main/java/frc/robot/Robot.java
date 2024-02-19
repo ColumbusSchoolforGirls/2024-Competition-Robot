@@ -30,7 +30,7 @@ public class Robot extends TimedRobot {
   public DriveTrain driveTrain;
   public Limelight limelight;
   public NoteSystem noteSystem;
-  public Climber climber;
+  //vpublic Climber climber;
   //set arm brake?
   
   
@@ -54,7 +54,7 @@ public class Robot extends TimedRobot {
     limelight = new Limelight(driveTrain);
     driveTrain = new DriveTrain(limelight); // PS this rests encoders at initialization
     noteSystem = new NoteSystem(limelight); 
-    climber = new Climber();
+    //climber = new Climber();
     noteSystem.setCoastMode();
 
     //autopath options for dashboard
@@ -206,7 +206,7 @@ public class Robot extends TimedRobot {
 
     noteSystem.noteSystemUpdate();
     
-    climber.climb();
+    //climber.climb();
   }
 
   /** This function is called once when the robot is disabled. */
