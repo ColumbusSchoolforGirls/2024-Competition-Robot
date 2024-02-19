@@ -51,9 +51,9 @@ public class NoteSystem {
     }
 
     // testing neos
-    public CANSparkMax shootMotor = new CANSparkMax(6, MotorType.kBrushless); // ID 8 CHANGE BACK
+    public CANSparkMax shootMotor = new CANSparkMax(8, MotorType.kBrushless); // ID 8 CHANGE BACK
 
-    public CANSparkMax intakeMotor = new CANSparkMax(7, MotorType.kBrushless); // ID 9 CHANGE BACK, 6 AND 7 FOR TEST
+    public CANSparkMax intakeMotor = new CANSparkMax(9, MotorType.kBrushless); // ID 9 CHANGE BACK, 6 AND 7 FOR TEST
 
     public WPI_TalonSRX holdMotor = new WPI_TalonSRX(10);
 
@@ -134,7 +134,7 @@ public class NoteSystem {
             setStopped();
             if (aux.getLeftBumper()) {
                 state = NoteAction.INTAKE;
-            } else if (aux.getRightBumper()) {
+            } else if (aux.getRightBumperPressed()) {
                 state = NoteAction.REV_UP;
             } else if (aux.getXButton()) {
                 state = NoteAction.REVERSEINTAKE;   
