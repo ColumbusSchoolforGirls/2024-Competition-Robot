@@ -36,7 +36,7 @@ public class DriveTrain {
 
     public static XboxController driveController = new XboxController(0); 
     MecanumDrive robotDrive = new MecanumDrive(frontLeft, backLeft, frontRight, backRight);
-    //we probably need to invert some motors
+    
 
     public RelativeEncoder frontLeftEncoder = frontLeft.getEncoder();
     public RelativeEncoder backLeftEncoder = backLeft.getEncoder();

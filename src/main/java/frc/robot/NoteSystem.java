@@ -12,6 +12,7 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
@@ -76,18 +77,22 @@ public class NoteSystem {
     public void setCoastMode() {
         shootMotor.setIdleMode(IdleMode.kCoast);
         intakeMotor.setIdleMode(IdleMode.kCoast);
+        holdMotor.setNeutralMode(NeutralMode.Coast);
     }
 
     public void setStopped() {
+        System.out.println("SetStopped Called");
         holdMotor.set(0);
-        m_intakePidController.setReference(0, CANSparkMax.ControlType.kVelocity);
-        m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
+        //m_intakePidController.setReference(0, CANSparkMax.ControlType.kVelocity);
+        //m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
+        intakeMotor.set(0);
+        shootMotor.set(0);
     }
 
     public void setIntake() {
         m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
         m_intakePidController.setReference(Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity);
-        holdMotor.set(-0.2);
+        holdMotor.set(1.0);
     }
 
     public void setRevUp() {
@@ -97,14 +102,14 @@ public class NoteSystem {
     }
 
     public void setShoot() {
-        holdMotor.set(0.2); //will probably need to change
+        holdMotor.set(-1.0); //will probably need to change
         m_shooterPidController.setReference(Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity); //will change
         m_intakePidController.setReference(Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity); //will change
             
     }
 
     public void setReverseIntake() {
-        holdMotor.set(0.2);
+        holdMotor.set(-1.0);
         m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity); //will change
         m_intakePidController.setReference(-Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity);
     }
@@ -135,6 +140,7 @@ public class NoteSystem {
             if (aux.getLeftBumper()) {
                 state = NoteAction.INTAKE;
             } else if (aux.getRightBumperPressed()) {
+                System.out.println("failing");
                 state = NoteAction.REV_UP;
             } else if (aux.getXButton()) {
                 state = NoteAction.REVERSEINTAKE;   
@@ -145,25 +151,29 @@ public class NoteSystem {
                 state = NoteAction.STOPPED;
             } else if (isNoteDetected() || aux.getYButtonPressed()) { //limit switch is pressed - need to comment out when testing until we get limit switch
                 state = NoteAction.HOLD; 
+                System.out.println("switched to hold state, not actually executing yet");
+            }
         } else if (state == NoteAction.REVERSEINTAKE) { //FROM STOPPED OR HOLD
             setReverseIntake();
             if (aux.getXButtonReleased()) {
                 state = NoteAction.STOPPED;
             }
         } else if (state == NoteAction.HOLD) {
+            System.out.println(intakeEncoder.getVelocity());
+            System.out.println("Made it to hold bracket");
             setStopped();
             if (aux.getRightBumperPressed()) {
                 state = NoteAction.REV_UP;
             } //else if (aux.getLeftBumperReleased()) { //in case you rev-up w/o a note (notesystem: cant hold->intake so INSTEAD hold->stopped->intake to try again)
                 //state = NoteAction.STOPPED; //feels a little broken please check - I dont think this is necessary because if you dont have a note you wont get to the hold state
-            } else if (aux.getXButton()) {
+            else if (aux.getXButton()) {
                 state = NoteAction.REVERSEINTAKE;
-            } else if (aux.getLeftBumperPressed()) {
-                state = NoteAction.INTAKE;
+            // } else if (aux.getLeftBumperPressed()) {
+            //     state = NoteAction.INTAKE;
             }
         } else if (state == NoteAction.REV_UP) {
             setRevUp();
-            if (Math.abs(shooterEncoder.getVelocity()) > 2800 && Math.abs(intakeEncoder.getVelocity()) > 2800) {
+            if (Math.abs(shooterEncoder.getVelocity()) > Constants.SHOOTING_VELOCITY && Math.abs(intakeEncoder.getVelocity()) > Constants.SHOOTING_VELOCITY) {
                 state = NoteAction.SHOOT;
                 startTime = Timer.getFPGATimestamp();
             }

@@ -26,9 +26,9 @@ public final class Constants {
     //note stuff
     public static final double AUX_DEADZONE = 0.1;
     public static final int INTAKE_LIMIT_SWITCH_CHANNEL = 0;
-    public static final int INTAKE_RPM = -3000;
-    public static final int SHOOTER_RPM = 3000;
-    public static final int SHOOTING_VELOCITY = 2800;
+    public static final int INTAKE_RPM = 3000; //3000 for speaker, testing this for amp
+    public static final int SHOOTER_RPM = -3000; //have shooter go slower for amp to get better spin 
+    public static final int SHOOTING_VELOCITY = 2800; //1500
 
 }
 
