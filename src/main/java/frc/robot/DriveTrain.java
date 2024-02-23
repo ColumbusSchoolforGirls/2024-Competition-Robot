@@ -116,9 +116,11 @@ public class DriveTrain {
 
     public void setTeleop() {
         if (driveController.getXButtonPressed()) {
-            setBrakeMode();
-        } else {
+            if (frontLeft.getIdleMode() == IdleMode.kCoast) {
+                setBrakeMode();
+            } else {
             setCoastMode();
+            }
         }
     }
 

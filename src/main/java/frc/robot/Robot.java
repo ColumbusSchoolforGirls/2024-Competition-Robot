@@ -106,7 +106,6 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    //set arm brake
     driveTrain.resetGyro();
     driveTrain.resetEncoders();
 

@@ -42,7 +42,7 @@ public class NoteSystem {
 
     public NoteSystem(Limelight limelight) {
         this.limelight = limelight;
-        SmartDashboard.putBoolean("Note Detected", false);
+        // SmartDashboard.putBoolean("Note Detected", false);
     }
 
     public boolean isNoteDetected() {
@@ -98,20 +98,20 @@ public class NoteSystem {
     public void setRevUp() {
         holdMotor.set(0);
         m_shooterPidController.setReference(Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
-        m_intakePidController.setReference(Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity);
+        m_intakePidController.setReference(-Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
     }
 
     public void setShoot() {
         holdMotor.set(-1.0); //will probably need to change
         m_shooterPidController.setReference(Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity); //will change
-        m_intakePidController.setReference(Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity); //will change
+        m_intakePidController.setReference(-Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity); //will change
             
     }
 
     public void setReverseIntake() {
         holdMotor.set(-1.0);
         m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity); //will change
-        m_intakePidController.setReference(-Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity);
+        m_intakePidController.setReference(Constants.REVERSE_INTAKE_RPM, CANSparkMax.ControlType.kVelocity);
     }
 
     public void noteSystemUpdate() {
@@ -173,8 +173,13 @@ public class NoteSystem {
             }
         } else if (state == NoteAction.REV_UP) {
             setRevUp();
+            System.out.println(shooterEncoder.getVelocity() + "*******SHOOT***********");
+            System.out.println(intakeEncoder.getVelocity() + "==========INTAKE===========");
+
+
             if (Math.abs(shooterEncoder.getVelocity()) > Constants.SHOOTING_VELOCITY && Math.abs(intakeEncoder.getVelocity()) > Constants.SHOOTING_VELOCITY) {
                 state = NoteAction.SHOOT;
+                System.out.println(shooterEncoder.getVelocity() + "*********SHOOT*********");
                 startTime = Timer.getFPGATimestamp();
             }
             //else if (aux.getBButton()) {
