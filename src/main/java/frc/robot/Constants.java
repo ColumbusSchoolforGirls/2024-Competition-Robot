@@ -26,14 +26,11 @@ public final class Constants {
     //note stuff
     public static final double AUX_DEADZONE = 0.1;
     public static final int INTAKE_LIMIT_SWITCH_CHANNEL = 0;
-    public static final int INTAKE_RPM = 3000; //3000 for speaker, testing this for amp
-    public static final int REVERSE_INTAKE_RPM = -1500;
+    public static final int INTAKE_RPM = 3000; //3000 for speaker
+    public static final int REVERSE_INTAKE_RPM = -1200;
     public static final int SHOOTER_RPM = -3500; //-3500 for speaker 
     public static final int SHOOTING_VELOCITY = 3300; //3300 for speaker
-    public static final int AMP_INTAKE_RPM = 3300; //3300 for speaker
-    public static final int AMP_SHOOTER_RPM = 3300; //3300 for speaker
-    public static final int AMP_SHOOTING_VELOCITY = 3300; //3300 for speaker
-
-
+    public static final int AMP_SHOOTER_RPM = 1300; //? for amp
+    public static final int AMP_SHOOTING_VELOCITY = 1100; //? for amp
 }
 

@@ -38,6 +38,7 @@ public class NoteSystem {
 
     NoteAction state;
 
+    boolean ampShoot;
     double startTime;
 
     public NoteSystem(Limelight limelight) {
@@ -100,12 +101,23 @@ public class NoteSystem {
         m_shooterPidController.setReference(Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
         m_intakePidController.setReference(-Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
     }
-
+    
     public void setShoot() {
         holdMotor.set(-1.0); //will probably need to change
         m_shooterPidController.setReference(Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity); //will change
-        m_intakePidController.setReference(-Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity); //will change
-            
+        m_intakePidController.setReference(-Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity); //will change    
+    }
+
+    public void setAmpRevUp() {
+        holdMotor.set(0);
+        m_shooterPidController.setReference(Constants.AMP_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
+        m_intakePidController.setReference(-Constants.AMP_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
+    }
+
+    public void setAmpShoot() {
+        holdMotor.set(-1.0); //will probably need to change
+        m_shooterPidController.setReference(Constants.AMP_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity); //will change
+        m_intakePidController.setReference(-Constants.AMP_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity); //will change
     }
 
     public void setReverseIntake() {
@@ -141,6 +153,10 @@ public class NoteSystem {
                 state = NoteAction.INTAKE;
             } else if (aux.getRightBumperPressed()) {
                 System.out.println("failing");
+                ampShoot = false;
+                state = NoteAction.REV_UP;
+            } else if (aux.getAButtonPressed()) {
+                ampShoot = true;
                 state = NoteAction.REV_UP;
             } else if (aux.getXButton()) {
                 state = NoteAction.REVERSEINTAKE;   
@@ -162,32 +178,41 @@ public class NoteSystem {
             System.out.println(intakeEncoder.getVelocity());
             System.out.println("Made it to hold bracket");
             setStopped();
-            if (aux.getRightBumperPressed()) {
+            if (aux.getRightBumperPressed()) { 
+                ampShoot = false;
                 state = NoteAction.REV_UP;
-            } //else if (aux.getLeftBumperReleased()) { //in case you rev-up w/o a note (notesystem: cant hold->intake so INSTEAD hold->stopped->intake to try again)
-                //state = NoteAction.STOPPED; //feels a little broken please check - I dont think this is necessary because if you dont have a note you wont get to the hold state
-            else if (aux.getXButton()) {
+            } else if (aux.getAButtonPressed()) {
+                ampShoot = true;
+                state = NoteAction.REV_UP;
+            } else if (aux.getAButtonPressed()) {
                 state = NoteAction.REVERSEINTAKE;
             // } else if (aux.getLeftBumperPressed()) {
             //     state = NoteAction.INTAKE;
-            }
+            } 
         } else if (state == NoteAction.REV_UP) {
-            setRevUp();
-            System.out.println(shooterEncoder.getVelocity() + "*******SHOOT***********");
-            System.out.println(intakeEncoder.getVelocity() + "==========INTAKE===========");
-
-
-            if (Math.abs(shooterEncoder.getVelocity()) > Constants.SHOOTING_VELOCITY && Math.abs(intakeEncoder.getVelocity()) > Constants.SHOOTING_VELOCITY) {
-                state = NoteAction.SHOOT;
-                System.out.println(shooterEncoder.getVelocity() + "*********SHOOT*********");
-                startTime = Timer.getFPGATimestamp();
+            if (!ampShoot) {
+                setRevUp();
+                if (Math.abs(shooterEncoder.getVelocity()) > Constants.SHOOTING_VELOCITY && Math.abs(intakeEncoder.getVelocity()) > Constants.SHOOTING_VELOCITY) {
+                    state = NoteAction.SHOOT;
+                    startTime = Timer.getFPGATimestamp();
+                }
+            } else if (ampShoot) {
+                setAmpRevUp();
+                if (Math.abs(shooterEncoder.getVelocity()) > Constants.AMP_SHOOTING_VELOCITY && Math.abs(intakeEncoder.getVelocity()) > Constants.AMP_SHOOTING_VELOCITY) {
+                    state = NoteAction.SHOOT;
+                    startTime = Timer.getFPGATimestamp();
+                }
             }
             //else if (aux.getBButton()) {
                 //state  = NoteAction.SHOOT; 
             //}
         } else if (state == NoteAction.SHOOT) {
-            setShoot();
-            if (Timer.getFPGATimestamp() - startTime > 2.0) {
+            if (!ampShoot) {
+                setShoot();
+            } else if (ampShoot) {
+                setAmpShoot();
+            }
+            if (Timer.getFPGATimestamp() - startTime > 1.5) { // might need to lower more (was 2.0)
                 state = NoteAction.STOPPED;
             }
         }
