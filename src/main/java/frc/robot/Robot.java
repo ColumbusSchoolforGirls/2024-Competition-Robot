@@ -179,7 +179,7 @@ public class Robot extends TimedRobot {
         goToNextState();
       }
     } else if (currentStep.getAction() == AutoAction.DRIVEINTAKE) {
-      //simultaneously drive forward and intake - need to do - LJ
+      //simultaneously drive forward and intake - need to do - LJ - actually 
       noteSystem.setIntake();
       driveTrain.autoDrive();
       if (driveTrain.driveComplete() || noteSystem.isNoteDetected()) { //add a time thing! //decided to do this instead of note detected because if it accidentally does not pick up the note it might cause issues
