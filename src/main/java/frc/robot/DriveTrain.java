@@ -211,9 +211,9 @@ public class DriveTrain {
         if (Math.abs(difference) < Constants.TURN_TOLERANCE) {
             rotationSpeed = 0;
         } else if (difference < 0) {
-            rotationSpeed = 0.005 * Math.abs(difference) + 0.05;
+            rotationSpeed = 0.004 * Math.abs(difference) + 0.05; //changed from 0.005 to 0.004
         } else if (difference > 0) {
-            rotationSpeed = -0.005 * Math.abs(difference) - 0.05;
+            rotationSpeed = -0.004 * Math.abs(difference) - 0.05;
         }
         robotDrive.driveCartesian(0, 0, rotationSpeed);
     }
@@ -233,9 +233,9 @@ public class DriveTrain {
         // } else if (Math.abs(getFrontLeftEncoder()) < 5) {
         //     speed = 0.15;
         } else if (driveDifference > 0) { //  && Math.abs(getFrontLeftEncoder()) > 5
-            speed = 0.0075 * Math.abs(driveDifference) + 0.05;
+            speed = 0.0065 * Math.abs(driveDifference) + 0.05; //changed from 0.0075 to 0.0065
         } else if (driveDifference < 0) { //  && Math.abs(getFrontLeftEncoder()) > 5
-            speed = -0.0075 * Math.abs(driveDifference) - 0.05;
+            speed = -0.0065 * Math.abs(driveDifference) - 0.05;
         }
         robotDrive.driveCartesian(speed, 0, 0);
         // remove printlines -NC

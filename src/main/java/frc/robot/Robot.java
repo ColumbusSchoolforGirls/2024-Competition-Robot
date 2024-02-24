@@ -92,6 +92,8 @@ public class Robot extends TimedRobot {
     //updating smartdashboard values
     driveTrain.update();
     noteSystem.noteSystemSetUpPid();
+    SmartDashboard.putBoolean("Note Detected?", noteSystem.isNoteDetected()); //green box if it is detected
+
   }
 
   /**
