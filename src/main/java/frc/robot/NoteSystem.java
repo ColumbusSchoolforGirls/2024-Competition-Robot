@@ -186,7 +186,6 @@ public class NoteSystem {
                 System.out.println("switched to hold state, not actually executing yet");
             } 
             boolean isStopped = intakeEncoder.getVelocity() < 100;
-            boolean isHighCurrent = intakeMotor.getOutputCurrent() > 35;
             boolean hasRunLong = Timer.getFPGATimestamp() - startIntakeTime > 0.5;
             if (isStopped && hasRunLong) {
                 intakeMotor.set(0);
