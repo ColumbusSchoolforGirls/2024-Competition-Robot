@@ -107,7 +107,7 @@ public class NoteSystem {
         m_intakePidController.setReference(-Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
         System.out.println("SetRevUp Called");
     }
-
+    
     public void setShoot() {
         holdMotor.set(-1.0); //will probably need to change
         m_shooterPidController.setReference(Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity); //will change
@@ -218,7 +218,7 @@ public class NoteSystem {
                 startIntakeTime = Timer.getFPGATimestamp();
             // } else if (aux.getLeftBumperPressed()) {
             //     state = NoteAction.INTAKE;
-            }
+            } 
         } else if (state == NoteAction.REV_UP) {
             if (!ampShoot) {
                 setRevUp();
@@ -226,7 +226,7 @@ public class NoteSystem {
                     state = NoteAction.SHOOT;
                     startTime = Timer.getFPGATimestamp();
                 }
-                if (Timer.getFPGATimestamp() - startRevTime > 2.25) {
+                if (Timer.getFPGATimestamp() - startRevTime > 2.25) { //do not set < 2
                     state = NoteAction.STOPPED;
                 }
             } else if (ampShoot) {
@@ -252,7 +252,7 @@ public class NoteSystem {
             } else if (ampShoot) {
                 setAmpShoot();
             }
-            if (Timer.getFPGATimestamp() - startTime > 1.0) { //might need to lower more (was 2.0)
+            if (Timer.getFPGATimestamp() - startTime > 1.5) { // could lower more NOT LESS THAN 1 (was 2.0)
                 state = NoteAction.STOPPED;
             }
         }

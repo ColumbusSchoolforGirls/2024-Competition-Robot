@@ -18,6 +18,8 @@ public class DriveTrain {
     private double targetDistance;
     private double difference;
     private double driveDifference;
+    private double speed;
+    private double rotationSpeed;
 
     // also move this -NC --> done
     AHRS gyro = new AHRS(SPI.Port.kMXP);
@@ -50,6 +52,7 @@ public class DriveTrain {
         resetEncoders();
         frontRight.setInverted(true); //need to change inversions with testing
         backRight.setInverted(true);
+        
         frontLeft.setInverted(false);
         backLeft.setInverted(false);
     }
@@ -205,7 +208,6 @@ public class DriveTrain {
     }
 
     public void gyroTurn() {
-        double rotationSpeed = 0;
         difference = (getFacingAngle() - targetAngle);
 
         if (Math.abs(difference) < Constants.TURN_TOLERANCE) {
@@ -220,7 +222,6 @@ public class DriveTrain {
     
     public void autoDrive() {
         driveDifference = targetDistance - getFrontLeftEncoder();
-        double speed = 0; //will likely change
 
         // if (driveDifference < Constants.SLOWING_DISTANCE) { // magic number >:( -NC
         //     speed = 0.2;

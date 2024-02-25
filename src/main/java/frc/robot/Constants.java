@@ -29,13 +29,13 @@ public final class Constants {
     public static final int INTAKE_RPM = 2500; //3000 for speaker, testing this for amp
     public static final int REVERSE_INTAKE_RPM = -1800;
     public static final int SHOOTER_RPM = -3500; //-3500 for speaker 
-    public static final int SHOOTING_VELOCITY = 3250; //3300 for speaker
-    public static final int AMP_INTAKE_RPM = 1800; //3300 for speaker //change to 1700
-    public static final int AMP_SHOOTER_RPM = -1700; //3300 for speaker //should be negative?????? //change to 1700
-    public static final int AMP_SHOOTING_VELOCITY = 1550; //3300 for speaker
-    public static final int AMP_INTAKE_VELOCITY = 1650;
-
+    public static final int SHOOTING_VELOCITY = 3300; //3300 for speaker, could be raised 50
+    public static final int AMP_INTAKE_RPM = 1825; //3300 for speaker //change to 1700
+    public static final int AMP_INTAKE_VELOCITY = 1675;
+    public static final int AMP_SHOOTER_RPM = -2070; //3300 for speaker //should be negative?????? //change to 1700
+    public static final int AMP_SHOOTING_VELOCITY = 1920; //3300 for speaker
     
+
 
 }
 
