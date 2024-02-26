@@ -14,11 +14,11 @@ package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
+import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
-import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
@@ -42,6 +42,7 @@ public class NoteSystem {
     double startTime;
     double startRevTime;
     double startIntakeTime;
+    boolean isStall;
 
     public NoteSystem(Limelight limelight) {
         this.limelight = limelight;
@@ -190,10 +191,12 @@ public class NoteSystem {
             if (isStopped && hasRunLong) {
                 intakeMotor.set(0);
                 shootMotor.set(0);
+                isStall=true;
                 System.out.println("intake has stalled");
                 //add smth to dash "it has stalled"
             } else {
                 setIntake();
+                isStall=false;
             }
         } else if (state == NoteAction.REVERSEINTAKE) { //FROM STOPPED OR HOLD
             setReverseIntake();

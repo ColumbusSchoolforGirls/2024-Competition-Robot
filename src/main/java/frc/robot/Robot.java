@@ -93,7 +93,7 @@ public class Robot extends TimedRobot {
     driveTrain.update();
     noteSystem.noteSystemSetUpPid();
     SmartDashboard.putBoolean("Note Detected?", noteSystem.isNoteDetected()); //green box if it is detected
-
+    SmartDashboard.putBoolean("Stall Detected",noteSystem.isStall);
   }
 
   /**
