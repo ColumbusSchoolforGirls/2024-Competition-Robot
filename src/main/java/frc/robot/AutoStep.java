@@ -20,5 +20,4 @@ public class AutoStep {
     public AutoAction getAction() {
         return action;
     }
-
 }

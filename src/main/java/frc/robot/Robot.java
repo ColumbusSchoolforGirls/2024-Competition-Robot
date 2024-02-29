@@ -38,6 +38,7 @@ public class Robot extends TimedRobot {
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
   int state; //state for state machine
+  boolean timeSaved;
 
   //place holders for chosen path
   AutoStep[] autoActions = {};
@@ -115,12 +116,20 @@ public class Robot extends TimedRobot {
     autoActions = autoPaths.get(m_chooser.getSelected());
     System.out.println("Auto selected: " + m_chooser.getSelected());
     driveTrain.setAuto(); // sets drivetrain to brake mode
-    //reset arm encoders
+    
+    //startRev before shoot state begins
+    noteSystem.startRevTime = Timer.getFPGATimestamp();
+
     // set state to -1 (so that it moves to 0 when it starts)
     state = -1;
     goToNextState(); // runs intital/setup code for upcoming state (in this case the first one), and moves into it
-
   }
+
+//   public void startAutoShoot() {
+//     if (currentAction.getAction() != AutoAction.SHOOT) {
+//         startRevTime = Timer.getFPGATimestamp();
+//     }
+// }
 
   public void goToNextState() {
     System.out.println("Next State");
@@ -143,15 +152,24 @@ public class Robot extends TimedRobot {
       driveTrain.startTurn(currentAction.getValue());
   } else if (currentAction.getAction() == AutoAction.DRIVE) { 
       driveTrain.startDrive(currentAction.getValue());
+  } else if (currentAction.getAction() == AutoAction.DRIVEINTAKE) {
+      driveTrain.startDrive(currentAction.getValue());
   } else if (currentAction.getAction() == AutoAction.SHOOT) {
-      noteSystem.state = NoteAction.REV_UP;
-  }
+    // if (!timeSaved) {
+    //   timeSaved = true;
+    //   noteSystem.startRevTime = Timer.getFPGATimestamp();
+    // } 
+    noteSystem.startRevTime = Timer.getFPGATimestamp(); //setting timer before rev_up should allow rev code to run
+    noteSystem.state = NoteAction.REV_UP;
+    System.out.println(noteSystem.startRevTime + "((((((((((((((((((((()))))))))))))))))))))");
+  } 
   }
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
     noteSystem.noteSystemUpdate(); //using NoteSystem state machine in auto state machine
+    //noteSystem.startAutoShoot();
 
     SmartDashboard.putNumber("Current State", state);
     System.out.println(state);
@@ -160,6 +178,8 @@ public class Robot extends TimedRobot {
       driveTrain.stopDriveTrain();
       return;
     }
+
+  
 
     //set current action to correct step of auto path
     AutoStep currentStep = autoActions[state];
@@ -182,6 +202,7 @@ public class Robot extends TimedRobot {
       }
     } else if (currentStep.getAction() == AutoAction.DRIVEINTAKE) {
       //simultaneously drive forward and intake - need to do - LJ - actually 
+      //hi :D - ophelia >:()
       noteSystem.setIntake();
       driveTrain.autoDrive();
       if (driveTrain.driveComplete() || noteSystem.isNoteDetected()) { //add a time thing! //decided to do this instead of note detected because if it accidentally does not pick up the note it might cause issues

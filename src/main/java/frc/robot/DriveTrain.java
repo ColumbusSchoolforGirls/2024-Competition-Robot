@@ -7,6 +7,7 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -20,6 +21,7 @@ public class DriveTrain {
     private double driveDifference;
     private double speed;
     private double rotationSpeed;
+    double startAutoDriveTime;
 
     // also move this -NC --> done
     AHRS gyro = new AHRS(SPI.Port.kMXP);
@@ -190,6 +192,8 @@ public class DriveTrain {
             if(frontLeftEncoder.getVelocity() < 0.03){ //to prevent skidding bc of turning before drive is complete
                 return true;
             } 
+        } else if (Timer.getFPGATimestamp() - startAutoDriveTime > 1.0 && (frontLeft.getOutputCurrent() > 38.0 || backLeft.getOutputCurrent() > 38.0)) {
+            return true;
         }
         return false;
     }
@@ -205,6 +209,7 @@ public class DriveTrain {
     public void startDrive(double distanceInches) {
         resetEncoders();
         targetDistance = distanceInches;
+        
     }
 
     public void gyroTurn() {
@@ -213,15 +218,16 @@ public class DriveTrain {
         if (Math.abs(difference) < Constants.TURN_TOLERANCE) {
             rotationSpeed = 0;
         } else if (difference < 0) {
-            rotationSpeed = 0.004 * Math.abs(difference) + 0.05; //changed from 0.005 to 0.004
+            rotationSpeed = 0.0035 * Math.abs(difference) + 0.05; //changed from 0.005 to 0.004
         } else if (difference > 0) {
-            rotationSpeed = -0.004 * Math.abs(difference) - 0.05;
+            rotationSpeed = -0.0035 * Math.abs(difference) - 0.05;
         }
         robotDrive.driveCartesian(0, 0, rotationSpeed);
     }
     
     public void autoDrive() {
         driveDifference = targetDistance - getFrontLeftEncoder();
+        startAutoDriveTime = Timer.getFPGATimestamp(); //this one
 
         // if (driveDifference < Constants.SLOWING_DISTANCE) { // magic number >:( -NC
         //     speed = 0.2;
@@ -234,9 +240,9 @@ public class DriveTrain {
         // } else if (Math.abs(getFrontLeftEncoder()) < 5) {
         //     speed = 0.15;
         } else if (driveDifference > 0) { //  && Math.abs(getFrontLeftEncoder()) > 5
-            speed = 0.0065 * Math.abs(driveDifference) + 0.05; //changed from 0.0075 to 0.0065
+            speed = 0.00625 * Math.abs(driveDifference) + 0.05; //changed from 0.0075 to 0.0065
         } else if (driveDifference < 0) { //  && Math.abs(getFrontLeftEncoder()) > 5
-            speed = -0.0065 * Math.abs(driveDifference) - 0.05;
+            speed = -0.00625 * Math.abs(driveDifference) - 0.05;
         }
         robotDrive.driveCartesian(speed, 0, 0);
         // remove printlines -NC

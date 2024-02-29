@@ -60,11 +60,11 @@ public static AutoStep[] autoREDMiddleMain = {
 
 public static AutoStep[] autoBLUEMiddleMain = {
   new AutoStep(AutoAction.SHOOT, 0),
-  new AutoStep(AutoAction.DRIVE, -40), //30
+  new AutoStep(AutoAction.DRIVE, -27), //30
   new AutoStep(AutoAction.TURN, -180), //165
-  new AutoStep(AutoAction.DRIVEINTAKE, 40), //need to change with testing
+  new AutoStep(AutoAction.DRIVEINTAKE, 27), //need to change with testing
   new AutoStep(AutoAction.TURN, 180), //170
-  new AutoStep(AutoAction.DRIVE, 150), //90?
+  new AutoStep(AutoAction.DRIVE, 85), //lower?
   new AutoStep(AutoAction.SHOOT, 0)
 };
 
@@ -96,7 +96,7 @@ public static AutoStep[] autoREDRightMain = {
 
 public static AutoStep[] autoBLUERightMain = {
   new AutoStep(AutoAction.SHOOT, 0),
-  new AutoStep(AutoAction.DRIVE, -30),
+  new AutoStep(AutoAction.DRIVE, -40),
   new AutoStep(AutoAction.TURN, 90),
   new AutoStep(AutoAction.DRIVE, 65),
   new AutoStep(AutoAction.DRIVEINTAKE, 0),
