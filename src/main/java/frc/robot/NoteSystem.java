@@ -36,16 +36,17 @@ public class NoteSystem {
 
     public Limelight limelight;
 
-    NoteAction state;
+    NoteAction state = NoteAction.STOPPED;
     AutoAction autoActions;
    // AutoStep currentAction = autoActions[state];
 
-    boolean ampShoot;
-    boolean sideShoot;
+    boolean ampShoot = false;
+    boolean sideShoot = false;
     double startTime;
     double startRevTime;
     double startIntakeTime;
-    boolean isStall;
+    boolean isStall = false;
+    boolean trapShoot = false;
 
     public NoteSystem(Limelight limelight) {
         this.limelight = limelight;
@@ -112,7 +113,7 @@ public class NoteSystem {
     }
 
     public void setRevUp() {
-        holdMotor.set(0);
+        holdMotor.set(0.5);
         m_shooterPidController.setReference(-Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
         m_intakePidController.setReference(Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
         System.out.println("SetRevUp Called");
@@ -126,7 +127,7 @@ public class NoteSystem {
     }
 
     public void setAmpRevUp() {
-        holdMotor.set(0);
+        holdMotor.set(0.5);
         m_shooterPidController.setReference(Constants.AMP_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
         m_intakePidController.setReference(Constants.AMP_INTAKE_RPM, CANSparkMax.ControlType.kVelocity); //other compute has this set at a negative value?
         System.out.println("SetAmpRevUp Called");
@@ -140,7 +141,7 @@ public class NoteSystem {
     }
 
     public void setSideRevUp() {
-        holdMotor.set(0);
+        holdMotor.set(0.5);
         m_shooterPidController.setReference(-Constants.SIDE_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
         m_intakePidController.setReference(Constants.SIDE_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity); 
     }
@@ -156,6 +157,19 @@ public class NoteSystem {
         m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity); //will change
         m_intakePidController.setReference(Constants.REVERSE_INTAKE_RPM, CANSparkMax.ControlType.kVelocity);
         System.out.println("SetReverseUntake Called");
+    }
+
+    public void setTrapRevUp() {
+        holdMotor.set(0.5);
+        m_shooterPidController.setReference(-Constants.TRAP_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
+        m_intakePidController.setReference(Constants.TRAP_INTAKE_RPM, CANSparkMax.ControlType.kVelocity); 
+
+    }
+
+    public void setTrapShoot() {
+        holdMotor.set(-1.0);
+        m_shooterPidController.setReference(-Constants.TRAP_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
+        m_intakePidController.setReference(Constants.TRAP_INTAKE_RPM, CANSparkMax.ControlType.kVelocity); 
     }
 
     public void noteSystemUpdate() {
@@ -204,6 +218,12 @@ public class NoteSystem {
             } else if (aux.getXButton()) {
                 state = NoteAction.REVERSEINTAKE;  
                 startIntakeTime = Timer.getFPGATimestamp(); 
+            } else if (aux.getLeftTriggerAxis() > 0.1) {
+                state = NoteAction.REV_UP;
+                startRevTime = Timer.getFPGATimestamp();
+                trapShoot = true;
+                sideShoot = false;
+                ampShoot = false;
             }
         } else if (state == NoteAction.INTAKE) {
             System.out.println(intakeMotor.getOutputCurrent() + "      velocity       " + intakeEncoder.getVelocity());
@@ -255,9 +275,15 @@ public class NoteSystem {
                 startIntakeTime = Timer.getFPGATimestamp();
             // } else if (aux.getLeftBumperPressed()) {
             //     state = NoteAction.INTAKE;
-            } 
+            } else if (aux.getLeftTriggerAxis() > 0.4) {
+                state = NoteAction.REV_UP;
+                startRevTime = Timer.getFPGATimestamp();
+                trapShoot = true;
+                sideShoot = false;
+                ampShoot = false;
+            }
         } else if (state == NoteAction.REV_UP) {
-            if (!ampShoot && !sideShoot) {
+            if (!ampShoot && !sideShoot && !trapShoot) {
                 setRevUp();
                 if (Math.abs(shooterEncoder.getVelocity()) > Constants.SHOOTING_VELOCITY && Math.abs(intakeEncoder.getVelocity()) > Constants.SHOOTING_VELOCITY) {
                     state = NoteAction.SHOOT;
@@ -272,6 +298,12 @@ public class NoteSystem {
             } else if (sideShoot && !ampShoot) {
                 setSideRevUp();
                 if (Math.abs(shooterEncoder.getVelocity()) > Constants.SIDE_SHOOTING_VELOCITY && Math.abs(intakeEncoder.getVelocity()) > Constants.SIDE_SHOOTING_VELOCITY) {
+                    state = NoteAction.SHOOT;
+                    startTime = Timer.getFPGATimestamp();
+                }
+            } else if (trapShoot && !sideShoot && !ampShoot) {
+                setTrapRevUp();
+                if (Math.abs(shooterEncoder.getVelocity()) > Constants.TRAP_SHOOTING_VELOCITY && Math.abs(intakeEncoder.getVelocity()) > Constants.TRAP_INTAKE_VELOCITY) {
                     state = NoteAction.SHOOT;
                     startTime = Timer.getFPGATimestamp();
                 }
@@ -290,12 +322,14 @@ public class NoteSystem {
                 //state  = NoteAction.SHOOT; 
             //}
         } else if (state == NoteAction.SHOOT) {
-            if (!ampShoot && !sideShoot) {
+            if (!ampShoot && !sideShoot && !trapShoot) {
                 setShoot();
-            } else if (ampShoot && !sideShoot) {
+            } else if (ampShoot && !sideShoot && !trapShoot) {
                 setAmpShoot();
-            } else if (sideShoot && !ampShoot) {
+            } else if (sideShoot && !ampShoot && !trapShoot) {
                 setSideShoot();
+            } else if (trapShoot && !ampShoot && !sideShoot) {
+                setTrapShoot();
             }
             if (Timer.getFPGATimestamp() - startTime > 1.5) { // could lower more NOT LESS THAN 1 (was 2.0)
                 state = NoteAction.STOPPED;

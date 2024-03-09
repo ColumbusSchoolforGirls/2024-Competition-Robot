@@ -59,19 +59,13 @@ public class Robot extends TimedRobot {
     noteSystem.setCoastMode();
 
     //autopath options for dashboard
-    autoPaths.put("Red Left Main", AutoPaths.autoREDLeftMain);
-    autoPaths.put("Blue Left Main", AutoPaths.autoBLUELeftMain);//rename - done!
-    autoPaths.put("Red Middle Main", AutoPaths.autoREDMiddleMain); //renmae - done!
-    autoPaths.put("Blue Middle Main", AutoPaths.autoBLUEMiddleMain);
-    autoPaths.put("Red Right Main", AutoPaths.autoREDRightMain);
-    autoPaths.put("Blue Right Main", AutoPaths.autoBLUERightMain);
+    autoPaths.put("Left Main", AutoPaths.autoLeftMain);
+    autoPaths.put("Middle Main", AutoPaths.autoMiddleMain); //renmae - done!
+    autoPaths.put("Right Main", AutoPaths.autoRightMain);
 
-    autoPaths.put("Red Left Drive", AutoPaths.autoREDLeftDrive);
-    autoPaths.put("Blue Left Drive", AutoPaths.autoBLUELeftDrive);
-    autoPaths.put("Red Middle Drive", AutoPaths.autoREDMiddleDrive); 
-    autoPaths.put("Blue Middle Drive", AutoPaths.autoBLUEMiddleDrive);
-    autoPaths.put("Red Right Drive", AutoPaths.autoREDRightDrive);
-    autoPaths.put("Blue Right Drive", AutoPaths.autoBLUERightDrive);
+    autoPaths.put("Left Drive", AutoPaths.autoLeftDrive);
+    autoPaths.put("Middle Drive", AutoPaths.autoMiddleDrive); 
+    autoPaths.put("Right Drive", AutoPaths.autoRightDrive);
 
     for(String autoPathName: autoPaths.keySet()){
       m_chooser.addOption(autoPathName, autoPathName);
@@ -119,6 +113,14 @@ public class Robot extends TimedRobot {
     
     //startRev before shoot state begins
     noteSystem.startRevTime = Timer.getFPGATimestamp();
+    if (m_chooser.getSelected().contains("Left") || m_chooser.getSelected().contains("Right")) {
+        noteSystem.sideShoot = true;
+    } else {
+      noteSystem.sideShoot = false;
+    }
+
+    noteSystem.ampShoot = false;
+    noteSystem.trapShoot = false;
 
     // set state to -1 (so that it moves to 0 when it starts)
     state = -1;
@@ -218,6 +220,7 @@ public class Robot extends TimedRobot {
     driveTrain.resetEncoders();
     noteSystem.noteSystemTeleopInit();
     noteSystem.noteSystemSetUpPid();
+    driveTrain.setBrakeMode();
   }
 
   /** This function is called periodically during operator control. */

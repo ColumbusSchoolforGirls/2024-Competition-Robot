@@ -99,7 +99,7 @@ public class DriveTrain {
         SmartDashboard.putNumber("DriveTrain Back Right" , backRight.get());
         //for testing
     }
-    private void setBrakeMode() {
+    void setBrakeMode() {
         frontLeft.setIdleMode(IdleMode.kBrake);
         backLeft.setIdleMode(IdleMode.kBrake);
         frontRight.setIdleMode(IdleMode.kBrake);
@@ -148,6 +148,7 @@ public class DriveTrain {
         }
 
         double deadZone = Constants.DRIVE_CONTROLLER_DEADZONE;
+        double driftDeadZone = Constants.DRIVE_CONTROLLER_DRIFT_DEADZONE;
 
         if (noDeadZone) { // dont want deadzone for auto aka boolean; true=don't use deadzone
             deadZone = 0;
@@ -155,7 +156,7 @@ public class DriveTrain {
         if (Math.abs(driveController.getLeftY()) < deadZone) { 
             forwardSpeed = 0;
         }
-        if (Math.abs(driveController.getLeftX()) < deadZone) {
+        if (Math.abs(driveController.getLeftX()) < driftDeadZone) {
             sideSpeed = 0;
         }
         if (Math.abs(driveController.getRightX()) < deadZone) {
@@ -190,9 +191,11 @@ public class DriveTrain {
         driveDifference = targetDistance - getFrontLeftEncoder();
         if (Math.abs(driveDifference) < Constants.DISTANCE_TOLERANCE) {
             if(frontLeftEncoder.getVelocity() < 0.03){ //to prevent skidding bc of turning before drive is complete
+               System.out.println(getFrontLeftEncoder() + "AUTO FRONT LEFT ENCODER");
                 return true;
             } 
-        } else if (Timer.getFPGATimestamp() - startAutoDriveTime > 1.0 && (frontLeft.getOutputCurrent() > 38.0 || backLeft.getOutputCurrent() > 38.0)) {
+        } else if (Timer.getFPGATimestamp() - startAutoDriveTime > 3.0) {
+            System.out.println("Drive stalled");
             return true;
         }
         return false;
@@ -239,11 +242,21 @@ public class DriveTrain {
             speed = 0;
         // } else if (Math.abs(getFrontLeftEncoder()) < 5) {
         //     speed = 0.15;
-        } else if (driveDifference > 0) { //  && Math.abs(getFrontLeftEncoder()) > 5
-            speed = 0.00625 * Math.abs(driveDifference) + 0.05; //changed from 0.0075 to 0.0065
+        } 
+        else if (driveDifference > 0) { //  && Math.abs(getFrontLeftEncoder()) > 5
+            if (Math.abs(getFrontLeftEncoder()) < 3) {
+                speed = 0.15;
+            } else {
+                speed = 0.00625 * Math.abs(driveDifference) + 0.05; //changed from 0.0075 to 0.0065
+            }
         } else if (driveDifference < 0) { //  && Math.abs(getFrontLeftEncoder()) > 5
-            speed = -0.00625 * Math.abs(driveDifference) - 0.05;
+             if (Math.abs(getFrontLeftEncoder()) < 3) {
+                speed = -0.15;
+            } else {
+                speed = -0.00625 * Math.abs(driveDifference) - 0.05;
+            }
         }
+        System.out.println("AUTODRIVE SPEED: " + speed);
         robotDrive.driveCartesian(speed, 0, 0);
         // remove printlines -NC
         //System.out.println("ENCODER INCHES: " + getFrontLeftEncoder());
