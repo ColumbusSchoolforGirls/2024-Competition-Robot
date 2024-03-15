@@ -14,6 +14,7 @@ public final class Constants {
     public static final int SLOWING_DISTANCE = 10;
     public static final double NORMAL_SPEED = 0.5;
     public static final double CRAWL_SPEED = 0.25;
+    public static final double VELOCITY_THRESHHOLD = 0.03;
 
     // tolerance (deadzone) for auto
     public static final double TURN_TOLERANCE = 2.0; 
