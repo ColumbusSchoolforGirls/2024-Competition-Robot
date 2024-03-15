@@ -17,7 +17,6 @@ import frc.robot.NoteSystem.NoteAction;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 
-
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
  * each mode, as described in the TimedRobot documentation. If you change the name of this class or
@@ -38,8 +37,9 @@ public class Robot extends TimedRobot {
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
   int state; //state for state machine
-  boolean timeSaved;
-
+  // boolean timeSaved;
+  // boolean isStopped;
+  // boolean hasRunLong;
   //place holders for chosen path
   AutoStep[] autoActions = {};
 
@@ -89,6 +89,8 @@ public class Robot extends TimedRobot {
     noteSystem.noteSystemSetUpPid();
     SmartDashboard.putBoolean("Note Detected?", noteSystem.isNoteDetected()); //green box if it is detected
     SmartDashboard.putBoolean("Stall Detected",noteSystem.isStall);
+    SmartDashboard.putBoolean("Ready to Shoot", noteSystem.atSpeed);
+    SmartDashboard.putBoolean("Revving", noteSystem.isRevving);
   }
 
   /**
@@ -115,7 +117,11 @@ public class Robot extends TimedRobot {
     noteSystem.startRevTime = Timer.getFPGATimestamp();
     if (m_chooser.getSelected().contains("Left") || m_chooser.getSelected().contains("Right")) {
         noteSystem.sideShoot = true;
-    } else {
+        noteSystem.normalShoot = false;
+        noteSystem.ampShoot = false;
+        noteSystem.trapShoot = false;
+        System.out.println("))))))))))))))))))))))))))))))0000----------sideshoot-------------------))))))))))))))0");
+      } else {
       noteSystem.sideShoot = false;
     }
 
@@ -173,6 +179,10 @@ public class Robot extends TimedRobot {
     noteSystem.noteSystemUpdate(); //using NoteSystem state machine in auto state machine
     //noteSystem.startAutoShoot();
 
+    //to time the intake in auto
+    // hasRunLong = Timer.getFPGATimestamp() - noteSystem.startIntakeTime > 0.5;
+
+
     SmartDashboard.putNumber("Current State", state);
     System.out.println(state);
     // stop robot and finish if at end of auto path
@@ -207,12 +217,23 @@ public class Robot extends TimedRobot {
       //hi :D - ophelia >:()
       noteSystem.setIntake();
       driveTrain.autoDrive();
+
       if (driveTrain.driveComplete() || noteSystem.isNoteDetected()) { //add a time thing! //decided to do this instead of note detected because if it accidentally does not pick up the note it might cause issues
         noteSystem.setStopped();
         goToNextState();
       }
-    } 
-  }
+    
+        // else if (isStopped && hasRunLong) { 
+        //   noteSystem.intakeMotor.set(0);
+        //   noteSystem.shootMotor.set(0);  
+        //   noteSystem.isStall = true;
+        //   System.out.println("intake has stalled");
+        // } else 
+        //   noteSystem.setIntake();
+        //   noteSystem.isStall = false;
+      }
+
+      }
 
   /** This function is called once when teleop is enabled. */
   @Override
