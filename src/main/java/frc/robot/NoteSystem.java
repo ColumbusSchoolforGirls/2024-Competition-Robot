@@ -241,9 +241,11 @@ public class NoteSystem {
         } else if (state == NoteAction.INTAKE) {
             //System.out.println(intakeMotor.getOutputCurrent() + "      velocity       " + intakeEncoder.getVelocity());
 
-            if (aux.getLeftBumperReleased()) {
+            if (aux.getLeftBumperReleased() || aux.getYButtonPressed()) {
                 state = NoteAction.STOPPED;
-            } else if (isNoteDetected() || aux.getYButtonPressed()) { // limit switch is pressed - need to comment out
+                atSpeed = false;
+                isRevving = false;
+            } else if (isNoteDetected()) { // limit switch is pressed - need to comment out
                 state = NoteAction.HOLD;
             }
             boolean isStopped = intakeEncoder.getVelocity() < 100;
@@ -350,6 +352,8 @@ public class NoteSystem {
             }
             if (aux.getYButtonPressed()) {
                 state = NoteAction.STOPPED;
+                atSpeed = false;
+                isRevving = false;
             }
             if (DriverStation.isAutonomous()) {
                 if (Timer.getFPGATimestamp() - startRevTime > 2.25) { // do not set < 2

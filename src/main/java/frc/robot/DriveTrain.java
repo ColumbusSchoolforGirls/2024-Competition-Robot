@@ -194,7 +194,7 @@ public class DriveTrain {
                System.out.println(getFrontLeftEncoder() + "AUTO FRONT LEFT ENCODER");
                 return true;
             } 
-        } else if (Timer.getFPGATimestamp() - startAutoDriveTime > 3.0) {
+        } else if (Math.abs(gyro.getVelocityY()) < Constants.VELOCITY_THRESHHOLD) {
             System.out.println("Drive stalled");
             return true;
         }
