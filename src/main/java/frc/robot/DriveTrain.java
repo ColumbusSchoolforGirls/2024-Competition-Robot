@@ -216,6 +216,7 @@ public class DriveTrain {
         driveDifference = targetDistance - getFrontLeftEncoder();
         startAutoDriveTime = Timer.getFPGATimestamp(); //this one - ok...
 
+        //this is the old auto drive in case the trapezoid one breaks things
         // if (Math.abs(driveDifference) < Constants.DISTANCE_TOLERANCE) {
         //     speed = 0;
         
@@ -233,6 +234,7 @@ public class DriveTrain {
         //         speed = -0.00625 * Math.abs(driveDifference) - 0.05;
         //     }
         // }
+
         double vMax = 0.20;
         double speedUpDistance = 3;
         double position = Math.abs(getFrontLeftEncoder());
@@ -240,6 +242,7 @@ public class DriveTrain {
         double slowDownDistance = 3; // might need to change
 
         //testing needed for trapezoidal
+        //this is a trapezoidal autodrive, which means that it starts slower and gets faster and reaches a certain top speedand then gets slower as it approaches the end  
         if (Math.abs(driveDifference) < Constants.DISTANCE_TOLERANCE) {
             speed = 0;
         } else{

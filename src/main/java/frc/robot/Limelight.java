@@ -4,9 +4,6 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
-
-import edu.wpi.first.apriltag.AprilTagDetection;
-import edu.wpi.first.apriltag.AprilTagDetector;
 public class Limelight {
     NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
     NetworkTableEntry tx = table.getEntry("tx"); // x axis position 
@@ -17,8 +14,6 @@ public class Limelight {
     NetworkTableEntry pos = table.getEntry("camera-pose_targetspace"); // 3D translation and rotations?
     NetworkTableEntry pos1 = table.getEntry("target-pose_cameraspace");
     NetworkTableEntry pos2 = table.getEntry("target-pose_robotspace");
-
-    
 
     DriveTrain driveTrain;
     double ySpeed = 0;

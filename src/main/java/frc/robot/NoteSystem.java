@@ -1,12 +1,4 @@
-//include rev with shoot? TALK TO NOAH SATURDAY 2/10/24
-//limelight ground distance print is commented
-//limitswitch code (intake->hold) commented
-//ABUTTON CHANGED TO LEFTBUMPER (me as aux i want it to be leftbumper, if shooter incorporates rev KEEP IT RIGHT BUMPER)
-//leftBumperReleased for making hold->stopped STATE change easier (doesn't bug into INTAKE for a second)
-
-//rev-> hold -> intake broken EDIT: maybe fixed?
-
-//CHANGE MOTOR IDS BACKsalkjsaldfjlsakjflskjdflksjdflkjsdlfkjslkfjsldkfjlsdkfjlskjflskdjflkdjflksdjflskjdflsdjflsdkjf - from ophelia 
+//salkjsaldfjlsakjflskjdflksjdflkjsdlfkjslkfjsldkfjlsdkfjlskjflskdjflkdjflksdjflskjdflsdjflsdkjf - from ophelia - hi ophelia (from lila)
 
 package frc.robot;
 
@@ -23,14 +15,14 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+//import edu.wpi.first.wpilibj.GenericHID.RumbleType;- see if the rumble still works with this commented out
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class NoteSystem {
     public SparkPIDController m_shooterPidController;
     public SparkPIDController m_intakePidController;
 
-    // limit switch not color sensor
+    // limit switch to detect the note (using instead of color sensor)
     private static DigitalInput intakeLimitSwitch = new DigitalInput(Constants.INTAKE_LIMIT_SWITCH_CHANNEL);
 
     public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM;
@@ -39,7 +31,6 @@ public class NoteSystem {
 
     NoteAction state = NoteAction.STOPPED;
     AutoAction autoActions;
-    // AutoStep currentAction = autoActions[state];
 
     boolean ampShoot = false;
     boolean sideShoot = false;
@@ -68,14 +59,13 @@ public class NoteSystem {
     }
 
     // testing neos
-    public CANSparkMax shootMotor = new CANSparkMax(8, MotorType.kBrushless); // ID 8 CHANGE BACK
+    public CANSparkMax shootMotor = new CANSparkMax(8, MotorType.kBrushless);
 
-    public CANSparkMax intakeMotor = new CANSparkMax(9, MotorType.kBrushless); // ID 9 CHANGE BACK, 6 AND 7 FOR TEST
+    public CANSparkMax intakeMotor = new CANSparkMax(9, MotorType.kBrushless);
 
     public WPI_TalonSRX holdMotor = new WPI_TalonSRX(10);
 
-    public static XboxController aux = new XboxController(1); // 1 is the zux controller - oml "zux" can we rename aux
-                                                              // to that
+    public static XboxController aux = new XboxController(1); // 1 is the zux controller - oml "zux" can we rename aux to that
 
     public RelativeEncoder shooterEncoder = shootMotor.getEncoder();
     public RelativeEncoder intakeEncoder = intakeMotor.getEncoder();
@@ -86,7 +76,7 @@ public class NoteSystem {
 
     NoteAction[] noteActions = {};
 
-    public void noteSystemTeleopInit() { // not being used?
+    public void noteSystemTeleopInit() { 
         state = NoteAction.STOPPED;
     }
 
@@ -97,19 +87,10 @@ public class NoteSystem {
     }
 
     public void setStopped() {
-        //System.out.println("SetStopped Called");
-        holdMotor.set(0);
-        // m_intakePidController.setReference(0, CANSparkMax.ControlType.kVelocity);
-        // m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
+        holdMotor.set(0); //using percent output instead of velocity because it negates coast mode
         intakeMotor.set(0);
         shootMotor.set(0);
     }
-
-    // public void startAutoShoot() {
-    // if (currentAction.getAction() != AutoAction.SHOOT) {
-    // startRevTime = Timer.getFPGATimestamp();
-    // }
-    // }
 
     public void setIntake() {
         m_shooterPidController.setReference(Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity);
@@ -126,16 +107,16 @@ public class NoteSystem {
     }
 
     public void setShoot() {
-        holdMotor.set(-1.0); // will probably need to change
-        m_shooterPidController.setReference(-Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity); // will change
-        m_intakePidController.setReference(Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity); // will change
+        holdMotor.set(-1.0); 
+        m_shooterPidController.setReference(-Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
+        m_intakePidController.setReference(Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity); 
         //System.out.println("SetShoot Called");
     }
 
     public void setAmpRevUp() {
         holdMotor.set(0.5);
         m_shooterPidController.setReference(Constants.AMP_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
-        m_intakePidController.setReference(Constants.AMP_INTAKE_RPM, CANSparkMax.ControlType.kVelocity); // other                                                                                                 // value?
+        m_intakePidController.setReference(Constants.AMP_INTAKE_RPM, CANSparkMax.ControlType.kVelocity); // "other" - an unknown entity                                                                                            // value?
         //System.out.println("SetAmpRevUp Called");
     }
 
@@ -160,9 +141,9 @@ public class NoteSystem {
 
     public void setReverseIntake() {
         holdMotor.set(-1.0);
-        m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity); // will change
+        m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
         m_intakePidController.setReference(Constants.REVERSE_INTAKE_RPM, CANSparkMax.ControlType.kVelocity);
-        System.out.println("SetReverseUntake Called");
+        //System.out.println("SetReverseIntake Called");
     }
 
     public void setTrapRevUp() {
@@ -190,7 +171,6 @@ public class NoteSystem {
                 startIntakeTime = Timer.getFPGATimestamp();
 
             } else if (aux.getRightBumperPressed()) {
-                // System.out.println("failing");
                 normalShoot = true;
                 ampShoot = false;
                 sideShoot = false;
@@ -229,7 +209,7 @@ public class NoteSystem {
                 state = NoteAction.STOPPED;
                 atSpeed = false;
                 isRevving = false;
-            } else if (isNoteDetected()) { // limit switch is pressed - need to comment out
+            } else if (isNoteDetected()) { // limit switch is pressed ("is note detected", not "is not detected")
                 state = NoteAction.HOLD;
             }
             boolean isStopped = intakeEncoder.getVelocity() < 100;
@@ -239,7 +219,6 @@ public class NoteSystem {
                 shootMotor.set(0);
                 isStall = true;
                 // System.out.println("intake has stalled");
-                // add smth to dash "it has stalled"
             } else {
                 setIntake();
                 isStall = false;
@@ -250,7 +229,6 @@ public class NoteSystem {
                 state = NoteAction.STOPPED;
             }
         } else if (state == NoteAction.HOLD) {
-            // System.out.println(intakeEncoder.getVelocity());
             setStopped();
             if (aux.getRightBumperPressed()) {
                 normalShoot = true;
@@ -345,12 +323,9 @@ public class NoteSystem {
                 }
             }
 
-            System.out.println(shooterEncoder.getVelocity() + "*******SHOOT***********");
-            System.out.println(intakeEncoder.getVelocity() + "==========INTAKE===========");
+            //System.out.println(shooterEncoder.getVelocity() + "*******SHOOT***********");
+            //System.out.println(intakeEncoder.getVelocity() + "==========INTAKE===========");
 
-            // else if (aux.getBButton()) {
-            // state = NoteAction.SHOOT;
-            // }
         } else if (state == NoteAction.SHOOT) {
             if (normalShoot) {
                 setShoot();
@@ -370,10 +345,17 @@ public class NoteSystem {
         }
 
         if (atSpeed && !DriverStation.isAutonomous()) {
-            aux.setRumble(GenericHID.RumbleType.kLeftRumble, 1.0);
+            aux.setRumble(GenericHID.RumbleType.kLeftRumble, 1.0); //rumble rumble CSG!
         } else {
             aux.setRumble(GenericHID.RumbleType.kLeftRumble, 0.0);
         }
+    }
+
+    public void updates() {
+        SmartDashboard.putBoolean("Note Detected?",isNoteDetected()); //green box if it is detected
+        SmartDashboard.putBoolean("Stall Detected", isStall);
+        SmartDashboard.putBoolean("Ready to Shoot", atSpeed);
+        SmartDashboard.putBoolean("Revving", isRevving);
     }
 
     public void noteSystemSetUpPid() {
@@ -382,7 +364,7 @@ public class NoteSystem {
         m_intakePidController = intakeMotor.getPIDController();
 
         // PID coefficients
-        kP = 0.00015; // needs to be a low number, was 1 that was probably the problem - slay!
+        kP = 0.00015; 
         kI = 0;
         kD = 0;
         kIz = 0;
@@ -405,57 +387,6 @@ public class NoteSystem {
         m_intakePidController.setFF(kFF);
         m_intakePidController.setOutputRange(kMinOutput, kMaxOutput);
     }
-    /*
-     * if () {
-     * m_intakePidController.setReference(setPointIntake,
-     * CANSparkMax.ControlType.kVelocity);
-     * } else {
-     * //intakeMotor.set();
-     * }
-     * 
-     * if (Math.abs(shootSpeed) < Constants.AUX_DEADZONE) {
-     * shootMotor.set(0);
-     * } else {
-     * //shootMotor.set();
-     * }
-     */
 
-    // SmartDashboard.putNumber("Trigger value 1:" , aux.getLeftY());
-    // SmartDashboard.putNumber("Trigger value 2:", aux.getRightY());
-
-    // System.out.println("Trigger value 1:" + aux.getLeftY());
-    // System.out.println("Trigger value 2:"+ aux.getRightY());
-
-    // limelight stuff to calculate distance with april tags
-    public void shooterDistance() {
-        double targetOffsetAngle_Vertical = limelight.ty.getDouble(0.0); // getting the vertical angle that the
-                                                                         // limelight is off from the april tag
-        double limelightMountAngleDegrees = -2; // will need to change
-        double limelightLensHeight = 6; // in inches -- will need to change
-        // distance from center of the limelight lens to the floor
-        double goalHeight = 24; // might need to change // in inches //goal = april tag NOT speaker
-        // this is for the speaker
-        double angleToGoalDegrees = limelightMountAngleDegrees + targetOffsetAngle_Vertical;
-        double angleToGoalRadians = angleToGoalDegrees * (3.14159 / 180.0);
-        double heightDistanceFromLimelightToAprilTag = goalHeight - limelightLensHeight;
-        double distanceFromLimelightToGoal = (heightDistanceFromLimelightToAprilTag) / Math.tan(angleToGoalRadians); // will
-                                                                                                                     // fl,
-                                                                                                                     // WAS
-                                                                                                                     // limelightLensHeight
-                                                                                                                     // -
-                                                                                                                     // goalHeight
-        // calculates distance
-        double groundDistanceToSpeaker = Math
-                .sqrt(Math.pow(distanceFromLimelightToGoal, 2) - Math.pow(heightDistanceFromLimelightToAprilTag, 2));
-        // double shooterAngle = something where distanceFromLimelightToGoal is the
-        // independent variable
-        // System.out.println("Distance on ground from limelight to april tag:" +
-        // groundDistanceToSpeaker);
-
-    }
-
-    // // mech will decide locking mechanism so arm can stop at multiple angles -->
-    // did not happen :((((((((((( only one angle allowed
-
-    // // add brake -> brake????
+    // limelight stuff to calculate distance with april tags - not actually using...check gitHub if you want to use the code future csg coders - lila :()
 }

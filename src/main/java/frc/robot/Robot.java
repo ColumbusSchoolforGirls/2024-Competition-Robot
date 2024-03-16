@@ -5,17 +5,11 @@
 package frc.robot;
 
 import java.util.HashMap;
-
-import com.revrobotics.SparkPIDController;
-
-import edu.wpi.first.units.Time;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.NoteSystem.NoteAction;
-import com.revrobotics.CANSparkLowLevel.MotorType;
-import com.revrobotics.CANSparkMax;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -30,16 +24,12 @@ public class Robot extends TimedRobot {
   public Limelight limelight;
   public NoteSystem noteSystem;
   public Climber climber;
-  //set arm brake?
-  
   
   //the drop down menu to choose a path on the dashboard
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
   int state; //state for state machine
-  // boolean timeSaved;
-  // boolean isStopped;
-  // boolean hasRunLong;
+
   //place holders for chosen path
   AutoStep[] autoActions = {};
 
@@ -55,14 +45,14 @@ public class Robot extends TimedRobot {
     limelight = new Limelight(driveTrain);
     driveTrain = new DriveTrain(limelight); // PS this rests encoders at initialization
     noteSystem = new NoteSystem(limelight); 
-    //climber = new Climber();
-    noteSystem.setCoastMode();
 
-    climber.setClimb();
+    noteSystem.setCoastMode(); //better for the motors
+
+    climber.setClimb(); //makes sure its stopped
 
     //autopath options for dashboard
     autoPaths.put("Left Main", AutoPaths.autoLeftMain);
-    autoPaths.put("Middle Main", AutoPaths.autoMiddleMain); //renmae - done!
+    autoPaths.put("Middle Main", AutoPaths.autoMiddleMain);
     autoPaths.put("Right Main", AutoPaths.autoRightMain);
 
     autoPaths.put("Left Drive", AutoPaths.autoLeftDrive);
@@ -85,14 +75,10 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-
     //updating smartdashboard values
     driveTrain.update();
     noteSystem.noteSystemSetUpPid();
-    SmartDashboard.putBoolean("Note Detected?", noteSystem.isNoteDetected()); //green box if it is detected
-    SmartDashboard.putBoolean("Stall Detected",noteSystem.isStall);
-    SmartDashboard.putBoolean("Ready to Shoot", noteSystem.atSpeed);
-    SmartDashboard.putBoolean("Revving", noteSystem.isRevving);
+    noteSystem.updates();
   }
 
   /**
@@ -113,7 +99,7 @@ public class Robot extends TimedRobot {
     //print selected auto path
     autoActions = autoPaths.get(m_chooser.getSelected());
     System.out.println("Auto selected: " + m_chooser.getSelected());
-    driveTrain.setAuto(); // sets drivetrain to brake mode
+    driveTrain.setAuto(); // sets drivetrain to brake mode for precision
     
     //startRev before shoot state begins
     noteSystem.startRevTime = Timer.getFPGATimestamp();
@@ -135,12 +121,6 @@ public class Robot extends TimedRobot {
     goToNextState(); // runs intital/setup code for upcoming state (in this case the first one), and moves into it
   }
 
-//   public void startAutoShoot() {
-//     if (currentAction.getAction() != AutoAction.SHOOT) {
-//         startRevTime = Timer.getFPGATimestamp();
-//     }
-// }
-
   public void goToNextState() {
     System.out.println("Next State");
     //moves into next state
@@ -149,15 +129,10 @@ public class Robot extends TimedRobot {
     if (state >= autoActions.length) {
       return;
     }
-  
-
-  //make a stop arm function maybe
 
   // sets current action/distance vlaues based on whatever state we're in
   AutoStep currentAction = autoActions[state];
 
-  // sets target angle/initial values/setup for the auto actions that need it
-  // Do this later
   if (currentAction.getAction() == AutoAction.TURN) {
       driveTrain.startTurn(currentAction.getValue());
   } else if (currentAction.getAction() == AutoAction.DRIVE) { 
@@ -165,13 +140,8 @@ public class Robot extends TimedRobot {
   } else if (currentAction.getAction() == AutoAction.DRIVEINTAKE) {
       driveTrain.startDrive(currentAction.getValue());
   } else if (currentAction.getAction() == AutoAction.SHOOT) {
-    // if (!timeSaved) {
-    //   timeSaved = true;
-    //   noteSystem.startRevTime = Timer.getFPGATimestamp();
-    // } 
-    noteSystem.startRevTime = Timer.getFPGATimestamp(); //setting timer before rev_up should allow rev code to run
-    noteSystem.state = NoteAction.REV_UP;
-    System.out.println(noteSystem.startRevTime + "((((((((((((((((((((()))))))))))))))))))))");
+      noteSystem.startRevTime = Timer.getFPGATimestamp(); //setting timer before rev_up should allow rev code to run
+      noteSystem.state = NoteAction.REV_UP;
   } 
   }
 
@@ -179,11 +149,6 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     noteSystem.noteSystemUpdate(); //using NoteSystem state machine in auto state machine
-    //noteSystem.startAutoShoot();
-
-    //to time the intake in auto
-    // hasRunLong = Timer.getFPGATimestamp() - noteSystem.startIntakeTime > 0.5;
-
 
     SmartDashboard.putNumber("Current State", state);
     System.out.println(state);
@@ -215,27 +180,16 @@ public class Robot extends TimedRobot {
         goToNextState();
       }
     } else if (currentStep.getAction() == AutoAction.DRIVEINTAKE) {
-      //simultaneously drive forward and intake - need to do - LJ - actually 
-      //hi :D - ophelia >:()
+      //hi :D - ophelia >:() - HI OPHELIA - lila :D - YO, K ;D
       noteSystem.setIntake();
       driveTrain.autoDrive();
 
-      if (driveTrain.driveComplete() || noteSystem.isNoteDetected()) { //add a time thing! //decided to do this instead of note detected because if it accidentally does not pick up the note it might cause issues
+      if (driveTrain.driveComplete() || noteSystem.isNoteDetected()) {
         noteSystem.setStopped();
         goToNextState();
       }
-    
-        // else if (isStopped && hasRunLong) { 
-        //   noteSystem.intakeMotor.set(0);
-        //   noteSystem.shootMotor.set(0);  
-        //   noteSystem.isStall = true;
-        //   System.out.println("intake has stalled");
-        // } else 
-        //   noteSystem.setIntake();
-        //   noteSystem.isStall = false;
-      }
-
-      }
+    }
+  }
 
   /** This function is called once when teleop is enabled. */
   @Override
