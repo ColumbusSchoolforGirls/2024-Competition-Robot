@@ -29,7 +29,7 @@ public class Robot extends TimedRobot {
   public DriveTrain driveTrain;
   public Limelight limelight;
   public NoteSystem noteSystem;
-  //vpublic Climber climber;
+  public Climber climber;
   //set arm brake?
   
   
@@ -57,6 +57,8 @@ public class Robot extends TimedRobot {
     noteSystem = new NoteSystem(limelight); 
     //climber = new Climber();
     noteSystem.setCoastMode();
+
+    climber.setClimb();
 
     //autopath options for dashboard
     autoPaths.put("Left Main", AutoPaths.autoLeftMain);
@@ -251,7 +253,9 @@ public class Robot extends TimedRobot {
     driveTrain.setTeleop(); // switches between brake and coast when you press x button
 
     noteSystem.noteSystemUpdate();
-    
+
+    climber.climb();
+  
     //climber.climb();
   }
 

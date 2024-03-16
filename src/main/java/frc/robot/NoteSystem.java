@@ -150,7 +150,6 @@ public class NoteSystem {
         holdMotor.set(0.5);
         m_shooterPidController.setReference(-Constants.SIDE_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
         m_intakePidController.setReference(Constants.SIDE_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
-        System.out.println(startShootTime + " side rev up #######");
     }
 
     public void setSideShoot() {
@@ -168,32 +167,17 @@ public class NoteSystem {
 
     public void setTrapRevUp() {
         holdMotor.set(0.5);
-        m_shooterPidController.setReference(-Constants.TRAP_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
+        m_shooterPidController.setReference(Constants.TRAP_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
         m_intakePidController.setReference(Constants.TRAP_INTAKE_RPM, CANSparkMax.ControlType.kVelocity);
     }
 
     public void setTrapShoot() {
         holdMotor.set(-1.0);
-        m_shooterPidController.setReference(-Constants.TRAP_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
+        m_shooterPidController.setReference(Constants.TRAP_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
         m_intakePidController.setReference(Constants.TRAP_INTAKE_RPM, CANSparkMax.ControlType.kVelocity);
     }
 
     public void noteSystemUpdate() {
-        // //FOR TESTING: CHANGE
-        // if (aux.getLeftBumper()) {//intake
-        // intakeMotor.set(0.6);
-        // } else if (aux.getRightBumper()) {//shoot
-        // intakeMotor.set(0.5);
-        // shootMotor.set(0.5);
-        // } else if (aux.getAButtonPressed()) {
-        // intakeMotor.set(0);
-        // shootMotor.set(0);
-        // } else if (aux.getXButton()) {
-        // intakeMotor.set(-0.75);
-        // } else {
-        // intakeMotor.set(0);
-        // shootMotor.set(0);
-        // }
 
         m_shooterPidController = shootMotor.getPIDController();
         m_intakePidController = intakeMotor.getPIDController();
@@ -307,7 +291,7 @@ public class NoteSystem {
                 if (Math.abs(shooterEncoder.getVelocity()) > Constants.SHOOTING_VELOCITY
                         && Math.abs(intakeEncoder.getVelocity()) > Constants.SHOOTING_VELOCITY) {
                     atSpeed = true;
-                    // startShootTime = Timer.getFPGATimestamp(); //might remove time limits from
+                    startShootTime = Timer.getFPGATimestamp(); //broke last time it was uncommented
                     // rev if we're driving around revving up
                     if (aux.getRightTriggerAxis() > 0.3) {
                         state = NoteAction.SHOOT;
@@ -374,7 +358,6 @@ public class NoteSystem {
                 setAmpShoot();
             } else if (sideShoot) {
                 setSideShoot();
-                System.out.println(startShootTime + " #######");
             } else if (trapShoot) {
                 setTrapShoot();
             }
