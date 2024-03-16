@@ -19,6 +19,18 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class NoteSystem {
+
+    enum NoteAction {
+        STOPPED, INTAKE, HOLD, REV_UP, SHOOT, REVERSEINTAKE
+    }
+
+    enum ShootMode {
+        NORMAL, SIDE, AMP, TRAP
+    }
+
+    NoteAction state = NoteAction.STOPPED;
+    ShootMode shootMode = ShootMode.NORMAL;
+
     public SparkPIDController m_shooterPidController;
     public SparkPIDController m_intakePidController;
 
@@ -29,54 +41,29 @@ public class NoteSystem {
 
     public Limelight limelight;
 
-    NoteAction state = NoteAction.STOPPED;
-    AutoAction autoActions;
+    double startTime;
 
-    boolean ampShoot = false;
-    boolean sideShoot = false;
-    boolean trapShoot = false;
-    boolean normalShoot = true;
+    public CANSparkMax shootMotor = new CANSparkMax(8, MotorType.kBrushless);
+    public CANSparkMax intakeMotor = new CANSparkMax(9, MotorType.kBrushless);
+    public WPI_TalonSRX holdMotor = new WPI_TalonSRX(10);
 
-    boolean isStall = false;
-    boolean atSpeed = false;
-    boolean isRevving = false;
+    public static XboxController aux = new XboxController(1); // 1 is the zux controller - oml "zux"
 
-    double startShootTime;
-    double startRevTime;
-    double startIntakeTime;
+    public RelativeEncoder shooterEncoder = shootMotor.getEncoder();
+    public RelativeEncoder intakeEncoder = intakeMotor.getEncoder();
 
     public NoteSystem(Limelight limelight) {
         this.limelight = limelight;
 
         this.shootMotor.setSmartCurrentLimit(40);
         this.intakeMotor.setSmartCurrentLimit(40);
-        // SmartDashboard.putBoolean("Note Detected", false);
     }
 
     public boolean isNoteDetected() {
-        boolean note = !intakeLimitSwitch.get();
-        return note;
+        return !intakeLimitSwitch.get(); // limit switch is wired opposite
     }
 
-    // testing neos
-    public CANSparkMax shootMotor = new CANSparkMax(8, MotorType.kBrushless);
-
-    public CANSparkMax intakeMotor = new CANSparkMax(9, MotorType.kBrushless);
-
-    public WPI_TalonSRX holdMotor = new WPI_TalonSRX(10);
-
-    public static XboxController aux = new XboxController(1); // 1 is the zux controller - oml "zux" can we rename aux to that
-
-    public RelativeEncoder shooterEncoder = shootMotor.getEncoder();
-    public RelativeEncoder intakeEncoder = intakeMotor.getEncoder();
-
-    enum NoteAction {
-        STOPPED, INTAKE, HOLD, REV_UP, SHOOT, REVERSEINTAKE
-    }
-
-    NoteAction[] noteActions = {};
-
-    public void noteSystemTeleopInit() { 
+    public void teleopInit() {
         state = NoteAction.STOPPED;
     }
 
@@ -86,285 +73,221 @@ public class NoteSystem {
         holdMotor.setNeutralMode(NeutralMode.Coast);
     }
 
-    public void setStopped() {
-        holdMotor.set(0); //using percent output instead of velocity because it negates coast mode
+    public int getShootTargetSpeed() {
+        if (state == NoteAction.INTAKE) {
+            return Constants.INTAKING_RPM;
+        }
+
+        if (shootMode == ShootMode.NORMAL) {
+            return Constants.SHOOTER_RPM;
+        } else if (shootMode == ShootMode.SIDE) {
+            return Constants.SIDE_SHOOTER_RPM;
+        } else if (shootMode == ShootMode.AMP) {
+            return Constants.AMP_SHOOTER_RPM;
+        } else if (shootMode == ShootMode.TRAP) {
+            return Constants.TRAP_SHOOTER_RPM;
+        }
+
+        return 0;
+    }
+
+    public int getIntakeTargetSpeed() {
+        if (state == NoteAction.INTAKE) {
+            return Constants.INTAKING_RPM;
+        } else if (state == NoteAction.REVERSEINTAKE) {
+            return Constants.REVERSE_INTAKING_RPM;
+        }
+
+        if (shootMode == ShootMode.NORMAL) {
+            return Constants.INTAKE_RPM;
+        } else if (shootMode == ShootMode.SIDE) {
+            return Constants.SIDE_INTAKE_RPM;
+        } else if (shootMode == ShootMode.AMP) {
+            return Constants.AMP_INTAKE_RPM;
+        } else if (shootMode == ShootMode.TRAP) {
+            return Constants.TRAP_INTAKE_RPM;
+        }
+
+        return 0;
+    }
+
+    public double getHoldSpeed() {
+        if (state == NoteAction.REV_UP) {
+            return 0.5;
+        } else if (state == NoteAction.SHOOT) {
+            return -1.0;
+        } else if (state == NoteAction.INTAKE) {
+            return 1.0;
+        }
+        return 0.0;
+    }
+
+    public int getShooterThresholdSpeed() {
+        if (shootMode == ShootMode.NORMAL) {
+            return Constants.SHOOTING_THRESHOLD;
+        } else if (shootMode == ShootMode.SIDE) {
+            return Constants.SIDE_SHOOTING_THRESHOLD;
+        } else if (shootMode == ShootMode.AMP) {
+            return Constants.AMP_SHOOTING_THRESHOLD;
+        } else if (shootMode == ShootMode.TRAP) {
+            return Constants.TRAP_SHOOTING_THRESHOLD;
+        }
+        return 0;
+    }
+
+    public int getIntakeThresholdSpeed() {
+        if (shootMode == ShootMode.NORMAL) {
+            return Constants.SHOOTING_THRESHOLD;
+        } else if (shootMode == ShootMode.SIDE) {
+            return Constants.SIDE_SHOOTING_THRESHOLD;
+        } else if (shootMode == ShootMode.AMP) {
+            return Constants.AMP_INTAKE_THRESHOLD;
+        } else if (shootMode == ShootMode.TRAP) {
+            return Constants.TRAP_SHOOTER_RPM;
+        }
+        return 0;
+    }
+
+    public void startRevUp(ShootMode newMode) {
+        shootMode = newMode;
+        state = NoteAction.REV_UP;
+        saveTime();
+    }
+
+    public void startIntake(NoteAction action) {
+        state = action;
+        saveTime();
+    }
+
+    public void stopMotors() {
+        holdMotor.set(0); // using percent output instead of velocity because it negates coast mode
         intakeMotor.set(0);
         shootMotor.set(0);
     }
 
-    public void setIntake() {
-        m_shooterPidController.setReference(Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity);
-        m_intakePidController.setReference(Constants.INTAKE_RPM, CANSparkMax.ControlType.kVelocity);
-        holdMotor.set(1.0);
-        //System.out.println("setIntake Called");
+    public void setMotors() {
+        holdMotor.set(getHoldSpeed());
+        m_shooterPidController.setReference(getShootTargetSpeed(), CANSparkMax.ControlType.kVelocity);
+        m_intakePidController.setReference(getIntakeTargetSpeed(), CANSparkMax.ControlType.kVelocity);
     }
 
-    public void setRevUp() {
-        holdMotor.set(0.5);
-        m_shooterPidController.setReference(-Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
-        m_intakePidController.setReference(Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
-        //System.out.println("SetRevUp Called");
+    public void saveTime() {
+        startTime = Timer.getFPGATimestamp();
     }
 
-    public void setShoot() {
-        holdMotor.set(-1.0); 
-        m_shooterPidController.setReference(-Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
-        m_intakePidController.setReference(Constants.SHOOTER_RPM, CANSparkMax.ControlType.kVelocity); 
-        //System.out.println("SetShoot Called");
+    public boolean isAtSpeed() {
+        return Math.abs(shooterEncoder.getVelocity()) > getShooterThresholdSpeed()
+                && Math.abs(intakeEncoder.getVelocity()) > getIntakeThresholdSpeed();
     }
 
-    public void setAmpRevUp() {
-        holdMotor.set(0.5);
-        m_shooterPidController.setReference(Constants.AMP_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
-        m_intakePidController.setReference(Constants.AMP_INTAKE_RPM, CANSparkMax.ControlType.kVelocity); // "other" - an unknown entity                                                                                            // value?
-        //System.out.println("SetAmpRevUp Called");
+    public boolean isIntakeStalled() {
+        boolean isStopped = intakeEncoder.getVelocity() < 100; // TODO: make constants
+        boolean hasRunLong = Timer.getFPGATimestamp() - startTime > 0.5;
+        return isStopped && hasRunLong;
     }
 
-    public void setAmpShoot() {
-        holdMotor.set(-1.0);
-        m_shooterPidController.setReference(Constants.AMP_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
-        m_intakePidController.setReference(Constants.AMP_INTAKE_RPM, CANSparkMax.ControlType.kVelocity); // other
-        //System.out.println("SetAmpShoot Called");
+    public boolean isRevving() {
+        return state == NoteAction.REV_UP;
     }
 
-    public void setSideRevUp() {
-        holdMotor.set(0.5);
-        m_shooterPidController.setReference(-Constants.SIDE_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
-        m_intakePidController.setReference(Constants.SIDE_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
-    }
-
-    public void setSideShoot() {
-        holdMotor.set(-1.0);
-        m_shooterPidController.setReference(-Constants.SIDE_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
-        m_intakePidController.setReference(Constants.SIDE_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
-    }
-
-    public void setReverseIntake() {
-        holdMotor.set(-1.0);
-        m_shooterPidController.setReference(0, CANSparkMax.ControlType.kVelocity);
-        m_intakePidController.setReference(Constants.REVERSE_INTAKE_RPM, CANSparkMax.ControlType.kVelocity);
-        //System.out.println("SetReverseIntake Called");
-    }
-
-    public void setTrapRevUp() {
-        holdMotor.set(0.5);
-        m_shooterPidController.setReference(Constants.TRAP_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
-        m_intakePidController.setReference(Constants.TRAP_INTAKE_RPM, CANSparkMax.ControlType.kVelocity);
-    }
-
-    public void setTrapShoot() {
-        holdMotor.set(-1.0);
-        m_shooterPidController.setReference(Constants.TRAP_SHOOTER_RPM, CANSparkMax.ControlType.kVelocity);
-        m_intakePidController.setReference(Constants.TRAP_INTAKE_RPM, CANSparkMax.ControlType.kVelocity);
-    }
-
-    public void noteSystemUpdate() {
-
+    public void update() {
         m_shooterPidController = shootMotor.getPIDController();
         m_intakePidController = intakeMotor.getPIDController();
 
-        //System.out.println(state.name());
-        if (state == NoteAction.STOPPED) {
-            setStopped();
-            if (aux.getLeftBumper()) {
-                state = NoteAction.INTAKE;
-                startIntakeTime = Timer.getFPGATimestamp();
+        if (aux.getYButtonPressed()) {
+            state = NoteAction.STOPPED;
+        }
 
-            } else if (aux.getRightBumperPressed()) {
-                normalShoot = true;
-                ampShoot = false;
-                sideShoot = false;
-                trapShoot = false;
-                state = NoteAction.REV_UP;
-                startRevTime = Timer.getFPGATimestamp();
-            } else if (aux.getAButtonPressed()) {
-                normalShoot = false;
-                ampShoot = true;
-                sideShoot = false;
-                trapShoot = false;
-                state = NoteAction.REV_UP;
-                startRevTime = Timer.getFPGATimestamp();
-            } else if (aux.getBButtonPressed()) {
-                normalShoot = false;
-                ampShoot = false;
-                sideShoot = true;
-                trapShoot = false;
-                state = NoteAction.REV_UP;
-                startRevTime = Timer.getFPGATimestamp();
+        // System.out.println(state.name());
+        // make a comment list of the buttons and their actions for people who do not
+        // know
+        if (state == NoteAction.STOPPED) {
+            stopMotors();
+            if (aux.getLeftBumper()) {
+                startIntake(NoteAction.INTAKE);
             } else if (aux.getXButton()) {
-                state = NoteAction.REVERSEINTAKE;
-                startIntakeTime = Timer.getFPGATimestamp();
-            } else if (aux.getLeftTriggerAxis() > 0.3) {
-                state = NoteAction.REV_UP;
-                startRevTime = Timer.getFPGATimestamp();
-                normalShoot = false;
-                ampShoot = false;
-                sideShoot = false;
-                trapShoot = true;
+                startIntake(NoteAction.REVERSEINTAKE);
+            } else if (aux.getRightBumperPressed()) {
+                startRevUp(ShootMode.NORMAL);
+            } else if (aux.getBButtonPressed()) {
+                startRevUp(ShootMode.SIDE);
+            } else if (aux.getAButtonPressed()) {
+                startRevUp(ShootMode.AMP);
+            } else if (aux.getLeftTriggerAxis() > Constants.TRIGGER_DEADZONE) {
+                startRevUp(ShootMode.TRAP);
             }
         } else if (state == NoteAction.INTAKE) {
-            //System.out.println(intakeMotor.getOutputCurrent() + "      velocity       " + intakeEncoder.getVelocity());
-
-            if (aux.getLeftBumperReleased() || aux.getYButtonPressed()) {
+            if (aux.getLeftBumperReleased()) {
                 state = NoteAction.STOPPED;
-                atSpeed = false;
-                isRevving = false;
             } else if (isNoteDetected()) { // limit switch is pressed ("is note detected", not "is not detected")
                 state = NoteAction.HOLD;
             }
-            boolean isStopped = intakeEncoder.getVelocity() < 100;
-            boolean hasRunLong = Timer.getFPGATimestamp() - startIntakeTime > 0.5;
-            if (isStopped && hasRunLong) {
-                intakeMotor.set(0);
-                shootMotor.set(0);
-                isStall = true;
-                // System.out.println("intake has stalled");
+            if (isIntakeStalled()) {
+                stopMotors();
             } else {
-                setIntake();
-                isStall = false;
+                setMotors();
             }
         } else if (state == NoteAction.REVERSEINTAKE) { // FROM STOPPED OR HOLD
-            setReverseIntake();
+            setMotors();
             if (aux.getXButtonReleased()) {
                 state = NoteAction.STOPPED;
             }
         } else if (state == NoteAction.HOLD) {
-            setStopped();
+            stopMotors();
             if (aux.getRightBumperPressed()) {
-                normalShoot = true;
-                ampShoot = false;
-                sideShoot = false;
-                trapShoot = false;
-                state = NoteAction.REV_UP;
-                startRevTime = Timer.getFPGATimestamp();
-            } else if (aux.getAButtonPressed()) {
-                normalShoot = false;
-                ampShoot = true;
-                sideShoot = false;
-                trapShoot = false;
-                state = NoteAction.REV_UP;
-                startRevTime = Timer.getFPGATimestamp();
+                startRevUp(ShootMode.NORMAL);
             } else if (aux.getBButtonPressed()) {
-                normalShoot = false;
-                ampShoot = false;
-                sideShoot = true;
-                trapShoot = false;
-                state = NoteAction.REV_UP;
-                startRevTime = Timer.getFPGATimestamp();
-            } else if (aux.getLeftTriggerAxis() > 0.3) {
-                normalShoot = false;
-                ampShoot = false;
-                sideShoot = false;
-                trapShoot = true;
-                state = NoteAction.REV_UP;
-                startRevTime = Timer.getFPGATimestamp();
+                startRevUp(ShootMode.SIDE);
+            } else if (aux.getAButtonPressed()) {
+                startRevUp(ShootMode.AMP);
+            } else if (aux.getLeftTriggerAxis() > Constants.TRIGGER_DEADZONE) {
+                startRevUp(ShootMode.TRAP);
             } else if (aux.getXButton()) {
                 state = NoteAction.REVERSEINTAKE;
-                startIntakeTime = Timer.getFPGATimestamp();
+                saveTime();
             }
         } else if (state == NoteAction.REV_UP) {
-            isRevving = true;
-            if (normalShoot) {
-                setRevUp();
-                if (Math.abs(shooterEncoder.getVelocity()) > Constants.SHOOTING_VELOCITY
-                        && Math.abs(intakeEncoder.getVelocity()) > Constants.SHOOTING_VELOCITY) {
-                    atSpeed = true;
-                    startShootTime = Timer.getFPGATimestamp(); //broke last time it was uncommented
-                    // rev if we're driving around revving up
-                    if (aux.getRightTriggerAxis() > 0.3) {
-                        state = NoteAction.SHOOT;
-                    }
-                    if (DriverStation.isAutonomous()) { // if you want something fun to do, go to the definition of
-                                                        // isAutonomous try... it finally, you might catch something
-                                                        // cough cough
-                        state = NoteAction.SHOOT;
-                    }
-                }
-            } else if (ampShoot) {
-                setAmpRevUp();
-                if (Math.abs(shooterEncoder.getVelocity()) > Constants.AMP_SHOOTING_VELOCITY
-                        && Math.abs(intakeEncoder.getVelocity()) > Constants.AMP_INTAKE_VELOCITY) {
-                    atSpeed = true;
-                    startShootTime = Timer.getFPGATimestamp();
+            setMotors();
+            boolean hasRunLongInAuto = DriverStation.isAutonomous() && Timer.getFPGATimestamp() - startTime > 3;
+            if (isAtSpeed() || hasRunLongInAuto) { // will shoot if it's run too long (will basically be at speed
+                                                   // anyway)
+                if (aux.getRightTriggerAxis() > Constants.TRIGGER_DEADZONE) {
                     state = NoteAction.SHOOT;
+                    saveTime();
                 }
-            } else if (sideShoot) {
-                setSideRevUp();
-                if (Math.abs(shooterEncoder.getVelocity()) > Constants.SIDE_SHOOTING_VELOCITY
-                        && Math.abs(intakeEncoder.getVelocity()) > Constants.SIDE_SHOOTING_VELOCITY) {
-                    atSpeed = true;
-                    startShootTime = Timer.getFPGATimestamp(); // might remove time limits from rev if we're driving
-                                                               // around revving up
-                    if (aux.getRightTriggerAxis() > 0.3) {
-                        state = NoteAction.SHOOT;
-                    }
-                    if (DriverStation.isAutonomous()) {
-                        state = NoteAction.SHOOT;
-                    }
-                }
-            } else if (trapShoot) {
-                setTrapRevUp();
-                if (Math.abs(shooterEncoder.getVelocity()) > Constants.TRAP_SHOOTING_VELOCITY
-                        && Math.abs(intakeEncoder.getVelocity()) > Constants.TRAP_INTAKE_VELOCITY) {
-                    atSpeed = true;
-                    startShootTime = Timer.getFPGATimestamp(); // might remove time limits from rev if we're driving
-                                                               // around revving up
+                if (DriverStation.isAutonomous() || shootMode == ShootMode.AMP || shootMode == ShootMode.TRAP) {
                     state = NoteAction.SHOOT;
+                    saveTime();
                 }
             }
-            if (aux.getYButtonPressed()) {
-                state = NoteAction.STOPPED;
-                atSpeed = false;
-                isRevving = false;
-            }
-            if (DriverStation.isAutonomous()) {
-                if (Timer.getFPGATimestamp() - startRevTime > 2.25) { // do not set < 2
-                    state = NoteAction.STOPPED;
-                }
-            }
-
-            //System.out.println(shooterEncoder.getVelocity() + "*******SHOOT***********");
-            //System.out.println(intakeEncoder.getVelocity() + "==========INTAKE===========");
-
+            // TODO: test if we want to be able to shoot not at speed in teleop
         } else if (state == NoteAction.SHOOT) {
-            if (normalShoot) {
-                setShoot();
-            } else if (ampShoot) {
-                setAmpShoot();
-            } else if (sideShoot) {
-                setSideShoot();
-            } else if (trapShoot) {
-                setTrapShoot();
-            }
-            if (Timer.getFPGATimestamp() - startShootTime > 1.5) { // could lower more NOT LESS THAN 1 (was 2.0)
-                
+            setMotors();
+            if (Timer.getFPGATimestamp() - startTime > 1.5) { // do not set < 1
                 state = NoteAction.STOPPED;
-                atSpeed = false;
-                isRevving = false;
             }
         }
 
-        if (atSpeed && !DriverStation.isAutonomous()) {
-            aux.setRumble(GenericHID.RumbleType.kLeftRumble, 1.0); //rumble rumble CSG!
+        if (isAtSpeed() && !DriverStation.isAutonomous()) {
+            aux.setRumble(GenericHID.RumbleType.kLeftRumble, 1.0); // rumble rumble CSG!
         } else {
             aux.setRumble(GenericHID.RumbleType.kLeftRumble, 0.0);
         }
     }
 
-    public void updates() {
-        SmartDashboard.putBoolean("Note Detected?",isNoteDetected()); //green box if it is detected
-        SmartDashboard.putBoolean("Stall Detected", isStall);
-        SmartDashboard.putBoolean("Ready to Shoot", atSpeed);
-        SmartDashboard.putBoolean("Revving", isRevving);
+    public void updateDashboard() {
+        SmartDashboard.putBoolean("Note Detected?", isNoteDetected()); // green box if it is detected
+        SmartDashboard.putBoolean("Stall Detected", isIntakeStalled());
+        SmartDashboard.putBoolean("Ready to Shoot", isAtSpeed());
+        SmartDashboard.putBoolean("Revving", isRevving());
     }
 
-    public void noteSystemSetUpPid() {
-
+    public void setUpPid() {
         m_shooterPidController = shootMotor.getPIDController();
         m_intakePidController = intakeMotor.getPIDController();
 
         // PID coefficients
-        kP = 0.00015; 
+        kP = 0.00015;
         kI = 0;
         kD = 0;
         kIz = 0;
@@ -388,5 +311,9 @@ public class NoteSystem {
         m_intakePidController.setOutputRange(kMinOutput, kMaxOutput);
     }
 
-    // limelight stuff to calculate distance with april tags - not actually using...check gitHub if you want to use the code future csg coders - lila :()
+    // limelight stuff to calculate distance with april tags - not actually
+    // using...check gitHub if you want to use the code future csg coders - lila :(
+
+    // TODO: tune pid
+    // TODO: in auto rev up and drive at same time for speed
 }

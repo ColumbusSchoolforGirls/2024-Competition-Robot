@@ -6,7 +6,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 
 public class Limelight {
     NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
-    NetworkTableEntry tx = table.getEntry("tx"); // x axis position 
+    NetworkTableEntry tx = table.getEntry("tx"); // x axis position
     NetworkTableEntry ty = table.getEntry("ty"); // y axis position
     NetworkTableEntry tv = table.getEntry("tv"); // is there valid target
     NetworkTableEntry ta = table.getEntry("ta"); // area in view
@@ -30,8 +30,8 @@ public class Limelight {
     }
 
     public double getRotation() {
-        return pos.getDoubleArray(new double[6])[5]; //get rotation z value from botpose array
-    
+        return pos.getDoubleArray(new double[6])[5]; // get rotation z value from botpose array
+
     }
 
     public double getX() {
