@@ -26,7 +26,7 @@ public class Robot extends TimedRobot {
   public DriveTrain driveTrain;
   public Limelight limelight;
   public NoteSystem noteSystem;
-  //public Climber climber; TODOI: put back
+  //public Climber climber; TODO: put back
 
   // the drop down menu to choose a path on the dashboard
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
@@ -148,6 +148,8 @@ public class Robot extends TimedRobot {
       } else {
         noteSystem.startRevUp(NoteSystem.ShootMode.NORMAL);
       }
+    } else if (currentAction.getAction() == AutoAction.DRIVEREVUP) {
+      driveTrain.startDrive(currentAction.getValue());
     }
   }
 
@@ -189,7 +191,7 @@ public class Robot extends TimedRobot {
       driveTrain.autoDrive();
 
       if (driveTrain.driveComplete() || noteSystem.isNoteDetected()) {
-        System.out.println("drive complete: " + Boolean.toString(driveTrain.driveComplete()));
+        System.out.println("drive complete: " + Boolean.toString(driveTrain.driveComplete())); //to see which stopped it
         System.out.println("note detected: " + Boolean.toString(noteSystem.isNoteDetected()));
         noteSystem.stopMotors();
         goToNextState();
