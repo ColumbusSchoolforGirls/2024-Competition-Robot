@@ -26,8 +26,8 @@ public class AutoPaths {
       new AutoStep(AutoAction.DRIVE, -29), // ?
       new AutoStep(AutoAction.TURN, -180),
       new AutoStep(AutoAction.DRIVEINTAKE, 30), // need to change w testing
-      new AutoStep(AutoAction.TURN, 182),
-      new AutoStep(AutoAction.DRIVE, 56), // changed match 22 from 80 to 75
+      new AutoStep(AutoAction.TURN, 180),
+      new AutoStep(AutoAction.DRIVE, 59), // changed match 22 from 80 to 75
       new AutoStep(AutoAction.SHOOT, 0)
   };
 

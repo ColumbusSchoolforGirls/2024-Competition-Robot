@@ -179,8 +179,7 @@ public class DriveTrain {
             if (frontLeftEncoder.getVelocity() < 0.03) { // to prevent skidding bc of turning before drive is complete
                 return true;
             }
-        } else if (Math.abs(gyro.getVelocityY()) < Constants.AUTO_DRIVE_VELOCITY_THRESHHOLD) { // change: test //change
-                                                                                               // add a time delay 0.5
+        } else if (Math.abs(gyro.getVelocityY()) < Constants.AUTO_DRIVE_VELOCITY_THRESHHOLD && Timer.getFPGATimestamp() - startAutoDriveTime > 0.5) { // change: test //change                                                                                
             System.out.println("Drive stalled - TESTING");
             return true;
         }
@@ -237,11 +236,11 @@ public class DriveTrain {
         // }
         // }
 
-        double vMax = 0.20;
-        double speedUpDistance = 3;
+        double vMax = 0.40;
+        double speedUpDistance = 15;
         double position = Math.abs(getFrontLeftEncoder());
         double minSpeed = 0.1;
-        double slowDownDistance = 3; // might need to change
+        double slowDownDistance = 20; // might need to change
 
         // testing needed for trapezoidal
         // this is a trapezoidal autodrive, which means that it starts slower and gets

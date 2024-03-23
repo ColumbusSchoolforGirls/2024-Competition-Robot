@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.NoteSystem.NoteAction;
+import edu.wpi.first.wpilibj.Timer;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -25,7 +26,7 @@ public class Robot extends TimedRobot {
   public DriveTrain driveTrain;
   public Limelight limelight;
   public NoteSystem noteSystem;
-  public Climber climber;
+  //public Climber climber; TODOI: put back
 
   // the drop down menu to choose a path on the dashboard
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
@@ -52,7 +53,7 @@ public class Robot extends TimedRobot {
 
     noteSystem.setCoastMode(); // better for the motors
 
-    climber.setClimb(); // makes sure its stopped
+    //climber.setClimb(); // makes sure its stopped TODO: put back
 
     // autopath options for dashboard
     autoPaths.put("Left Main", AutoPaths.autoLeftMain);
@@ -188,6 +189,8 @@ public class Robot extends TimedRobot {
       driveTrain.autoDrive();
 
       if (driveTrain.driveComplete() || noteSystem.isNoteDetected()) {
+        System.out.println("drive complete: " + Boolean.toString(driveTrain.driveComplete()));
+        System.out.println("note detected: " + Boolean.toString(noteSystem.isNoteDetected()));
         noteSystem.stopMotors();
         goToNextState();
       }
@@ -211,7 +214,7 @@ public class Robot extends TimedRobot {
 
     noteSystem.update();
 
-    climber.climb();
+    //climber.climb(); TODO: put back
 
     // climber.climb();
   }
