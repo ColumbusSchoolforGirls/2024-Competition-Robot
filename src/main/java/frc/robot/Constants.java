@@ -5,7 +5,7 @@ public final class Constants {
     // controller
     public static final double DRIVE_CONTROLLER_DEADZONE = 0.1; // dead zone
     public static final double DRIVE_CONTROLLER_DRIFT_DEADZONE = 0.15;
-    public static final double TRIGGER_DEADZONE = 0.3;
+    public static final double TRIGGER_DEADZONE = 0.1;
 
     // drive train
     public static final double WHEEL_CIRCUMFERENCE = 8.0 * Math.PI; // diameter of our wheels

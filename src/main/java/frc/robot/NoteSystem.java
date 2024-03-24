@@ -40,6 +40,9 @@ public class NoteSystem {
     public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput, maxRPM;
 
     public Limelight limelight;
+    public Robot robot;
+    public DriveTrain driveTrain;
+    public AutoStep autoStep;
 
     double startTime;
 
@@ -118,6 +121,8 @@ public class NoteSystem {
             return -1.0;
         } else if (state == NoteAction.INTAKE) {
             return 1.0;
+        } else if (state == NoteAction.REVERSEINTAKE) {
+            return -0.5;
         }
         return 0.0;
     }
@@ -152,6 +157,12 @@ public class NoteSystem {
         shootMode = newMode;
         state = NoteAction.REV_UP;
         saveTime();
+    }
+
+    public void autoSoloRevUp() {
+        holdMotor.set(0.5);
+        m_shooterPidController.setReference(getShootTargetSpeed(), CANSparkMax.ControlType.kVelocity);
+        m_intakePidController.setReference(getIntakeTargetSpeed(), CANSparkMax.ControlType.kVelocity);
     }
 
     public void startIntake(NoteAction action) {
@@ -199,8 +210,19 @@ public class NoteSystem {
         }
 
         // System.out.println(state.name());
-        // make a comment list of the buttons and their actions for people who do not
-        // know
+
+        // LIST OF BUTTONS AND THEIR ACTIONS:
+        /*
+         * Left bumper (hold): intake
+         * Right bumper (press): revsup for normal shoot
+         * Right trigger (press): shoots ONLY for normal & side
+         * Left trigger (press): revs up AND shoots for trap
+         * B button (press): revs up ONLY side shoot
+         * A button (press): revs up AND shoots for amp
+         * X button (hold): reverse intake
+         * Y button (press): stops motors
+         */
+
         if (state == NoteAction.STOPPED) {
             stopMotors();
             if (aux.getLeftBumper()) {
@@ -247,9 +269,11 @@ public class NoteSystem {
                 saveTime();
             }
         } else if (state == NoteAction.REV_UP) {
+            // robot = new Robot();
             setMotors();
-            boolean hasRunLongInAuto = DriverStation.isAutonomous() && Timer.getFPGATimestamp() - startTime > 3;
-            if (isAtSpeed() || hasRunLongInAuto) { // will shoot if it's run too long (will basically be at speed
+            // boolean hasRunLongInAuto = DriverStation.isAutonomous() && Timer.getFPGATimestamp() - startTime > 3; // removed (is in auto) will shoot if running in teleop too long as well
+            boolean hasRunLong = Timer.getFPGATimestamp() - startTime > 3;
+            if (isAtSpeed() || hasRunLong) { // will shoot if it's run too long (will basically be at speed
                                                    // anyway)
                 if (aux.getRightTriggerAxis() > Constants.TRIGGER_DEADZONE) {
                     state = NoteAction.SHOOT;
@@ -258,17 +282,18 @@ public class NoteSystem {
                 if (DriverStation.isAutonomous() || shootMode == ShootMode.AMP || shootMode == ShootMode.TRAP) {
                     state = NoteAction.SHOOT;
                     saveTime();
+                    // } //TODO: check all of this
                 }
             }
             // TODO: test if we want to be able to shoot not at speed in teleop
         } else if (state == NoteAction.SHOOT) {
             setMotors();
-            if (Timer.getFPGATimestamp() - startTime > 1.5) { // do not set < 1
+            if (Timer.getFPGATimestamp() - startTime > 0.5) { // do not set < 1
                 state = NoteAction.STOPPED;
             }
         }
 
-        if (isAtSpeed() && !DriverStation.isAutonomous()) {
+        if (isAtSpeed() && !DriverStation.isAutonomous() && state == NoteAction.REV_UP) {
             aux.setRumble(GenericHID.RumbleType.kLeftRumble, 1.0); // rumble rumble CSG!
         } else {
             aux.setRumble(GenericHID.RumbleType.kLeftRumble, 0.0);

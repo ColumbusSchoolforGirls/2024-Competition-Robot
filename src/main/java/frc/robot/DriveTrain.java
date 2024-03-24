@@ -236,7 +236,7 @@ public class DriveTrain {
         // }
         // }
 
-        double vMax = 0.40;
+        double vMax = 0.35;
         double speedUpDistance = 15;
         double position = Math.abs(getFrontLeftEncoder());
         double minSpeed = 0.1;

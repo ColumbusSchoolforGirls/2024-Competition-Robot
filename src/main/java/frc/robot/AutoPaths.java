@@ -23,11 +23,11 @@ public class AutoPaths {
 
   public static AutoStep[] autoMiddleMain = {
       new AutoStep(AutoAction.SHOOT, 0),
-      new AutoStep(AutoAction.DRIVE, -29), // ?
+      new AutoStep(AutoAction.DRIVE, -27), // ?
       new AutoStep(AutoAction.TURN, -180),
-      new AutoStep(AutoAction.DRIVEINTAKE, 30),
+      new AutoStep(AutoAction.DRIVEINTAKE, 32),
       new AutoStep(AutoAction.TURN, 180),
-      new AutoStep(AutoAction.DRIVE, 59), //TODO: test changed from DRIVE to DRIVEREVUP
+      new AutoStep(AutoAction.DRIVE, 68), //TODO: test changed from DRIVE to DRIVEREVUP
       new AutoStep(AutoAction.SHOOT, 0)
   };
 
