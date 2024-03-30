@@ -30,6 +30,7 @@ public class NoteSystem {
 
     NoteAction state = NoteAction.STOPPED;
     ShootMode shootMode = ShootMode.NORMAL;
+    String noteState = "STOPPED";
 
     public SparkPIDController m_shooterPidController;
     public SparkPIDController m_intakePidController;
@@ -68,6 +69,7 @@ public class NoteSystem {
 
     public void teleopInit() {
         state = NoteAction.STOPPED;
+        setMotors();
     }
 
     public void setCoastMode() {
@@ -187,7 +189,7 @@ public class NoteSystem {
     }
 
     public boolean isAtSpeed() {
-        return Math.abs(shooterEncoder.getVelocity()) > getShooterThresholdSpeed()
+        return (state == NoteAction.REV_UP) && Math.abs(shooterEncoder.getVelocity()) > getShooterThresholdSpeed()
                 && Math.abs(intakeEncoder.getVelocity()) > getIntakeThresholdSpeed();
     }
 
@@ -204,6 +206,8 @@ public class NoteSystem {
     public void update() {
         m_shooterPidController = shootMotor.getPIDController();
         m_intakePidController = intakeMotor.getPIDController();
+
+        noteState = state.toString();
 
         if (aux.getYButtonPressed()) {
             state = NoteAction.STOPPED;
@@ -305,6 +309,7 @@ public class NoteSystem {
         SmartDashboard.putBoolean("Stall Detected", isIntakeStalled());
         SmartDashboard.putBoolean("Ready to Shoot", isAtSpeed());
         SmartDashboard.putBoolean("Revving", isRevving());
+        SmartDashboard.putString("NoteState", noteState);
     }
 
     public void setUpPid() {

@@ -9,7 +9,9 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.NoteSystem.NoteAction;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
+// import edu.wpi.first.wpilibj.Timer;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -47,6 +49,13 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
+    // Starts recording to data log
+    DataLogManager.start();
+    
+    // Record both DS control and joystick data
+    DriverStation.startDataLog(DataLogManager.getLog());
+
+
     limelight = new Limelight(driveTrain);
     driveTrain = new DriveTrain(limelight); // PS this rests encoders at initialization
     noteSystem = new NoteSystem(limelight);

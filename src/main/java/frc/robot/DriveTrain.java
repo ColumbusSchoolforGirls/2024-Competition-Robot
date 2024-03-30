@@ -121,6 +121,12 @@ public class DriveTrain {
         }
     }
 
+    public void centerNote(){
+        setBrakeMode();
+
+        
+    }
+
     public void drive(double normalSpeed, double crawlSpeed, boolean noDeadZone) { // scaling
 
         double forwardSpeed = -driveController.getLeftY();
