@@ -266,5 +266,11 @@ public class DriveTrain {
     public void stopDriveTrain() {
         robotDrive.driveCartesian(0, 0 , 0);
     }
+
+    public void centerWithNote() {
+        setBrakeMode();
+
+
+    }
      
 }

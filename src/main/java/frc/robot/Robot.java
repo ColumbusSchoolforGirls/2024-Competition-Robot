@@ -9,6 +9,8 @@ import java.util.HashMap;
 import com.revrobotics.SparkPIDController;
 
 import edu.wpi.first.units.Time;
+import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.CAN;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -31,7 +33,6 @@ public class Robot extends TimedRobot {
   public NoteSystem noteSystem;
   //vpublic Climber climber;
   //set arm brake?
-  
   
   //the drop down menu to choose a path on the dashboard
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
@@ -72,6 +73,8 @@ public class Robot extends TimedRobot {
     }
 
     SmartDashboard.putData("Auto choices", m_chooser); //actually puts them on the dashboard after they are added to m_chooser
+
+    limelight.setVisionVariables();
   }
 
   /**
@@ -253,6 +256,7 @@ public class Robot extends TimedRobot {
     noteSystem.noteSystemUpdate();
     
     //climber.climb();
+    limelight.setWritePackets();
   }
 
   /** This function is called once when the robot is disabled. */

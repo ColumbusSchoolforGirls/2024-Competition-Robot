@@ -233,7 +233,6 @@ public class NoteSystem {
             } else if (aux.getLeftTriggerAxis() > 0.3) {
                 state = NoteAction.REV_UP;
                 startRevTime = Timer.getFPGATimestamp();
-                normalShoot = false;
                 ampShoot = false;
                 sideShoot = false;
                 trapShoot = true;
