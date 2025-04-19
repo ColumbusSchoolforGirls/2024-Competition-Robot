@@ -47,8 +47,8 @@ public class NoteSystem {
 
     double startTime;
 
-    public CANSparkMax shootMotor = new CANSparkMax(8, MotorType.kBrushless);
-    public CANSparkMax intakeMotor = new CANSparkMax(9, MotorType.kBrushless);
+    public CANSparkMax shootMotor = new CANSparkMax(8, MotorType.kBrushed); // changed at COSI to CiMs, should be kBrushless for NEOs
+    public CANSparkMax intakeMotor = new CANSparkMax(9, MotorType.kBrushed);
     public WPI_TalonSRX holdMotor = new WPI_TalonSRX(10);
 
     public static XboxController aux = new XboxController(1); // 1 is the zux controller - oml "zux"
@@ -78,39 +78,50 @@ public class NoteSystem {
         holdMotor.setNeutralMode(NeutralMode.Coast);
     }
 
-    public int getShootTargetSpeed() {
+    public double getShootTargetSpeed() { // TODO: change back to rpm and int, currently constants are in PERCENT FOR THE CIMS
         if (state == NoteAction.INTAKE) {
-            return Constants.INTAKING_RPM;
+            return 1.0;
+            // return Constants.INTAKING_RPM;
         }
 
         if (shootMode == ShootMode.NORMAL) {
-            return Constants.SHOOTER_RPM;
+            return -1.0;
+            // return Constants.SHOOTER_RPM;
         } else if (shootMode == ShootMode.SIDE) {
-            return Constants.SIDE_SHOOTER_RPM;
+            return -0.8;
+            // return Constants.SIDE_SHOOTER_RPM;
         } else if (shootMode == ShootMode.AMP) {
-            return Constants.AMP_SHOOTER_RPM;
+            return -0.6;
+            // return Constants.AMP_SHOOTER_RPM;
         } else if (shootMode == ShootMode.TRAP) {
-            return Constants.TRAP_SHOOTER_RPM;
+            return -0.7;
+            // return Constants.TRAP_SHOOTER_RPM;
         }
 
         return 0;
     }
 
-    public int getIntakeTargetSpeed() {
+    public double getIntakeTargetSpeed() { // TODO: make int again
         if (state == NoteAction.INTAKE) {
-            return Constants.INTAKING_RPM;
+            return 1.0;
+            // return Constants.INTAKING_RPM;
         } else if (state == NoteAction.REVERSEINTAKE) {
-            return Constants.REVERSE_INTAKING_RPM;
+            return -0.9;
+            // return Constants.REVERSE_INTAKING_RPM;
         }
 
         if (shootMode == ShootMode.NORMAL) {
-            return Constants.INTAKE_RPM;
+            return 1.0;
+            // return Constants.INTAKE_RPM;
         } else if (shootMode == ShootMode.SIDE) {
-            return Constants.SIDE_INTAKE_RPM;
+            return 0.8;
+            // return Constants.SIDE_INTAKE_RPM;
         } else if (shootMode == ShootMode.AMP) {
-            return Constants.AMP_INTAKE_RPM;
+            return 0.6;
+            // return Constants.AMP_INTAKE_RPM;
         } else if (shootMode == ShootMode.TRAP) {
-            return Constants.TRAP_INTAKE_RPM;
+            return 0.7;
+            // return Constants.TRAP_INTAKE_RPM;
         }
 
         return 0;
@@ -178,10 +189,12 @@ public class NoteSystem {
         shootMotor.set(0);
     }
 
-    public void setMotors() {
+    public void setMotors() { // TODO: change back
         holdMotor.set(getHoldSpeed());
-        m_shooterPidController.setReference(getShootTargetSpeed(), CANSparkMax.ControlType.kVelocity);
-        m_intakePidController.setReference(getIntakeTargetSpeed(), CANSparkMax.ControlType.kVelocity);
+        shootMotor.set(getShootTargetSpeed());
+        intakeMotor.set(getIntakeTargetSpeed());
+        // m_shooterPidController.setReference(getShootTargetSpeed(), CANSparkMax.ControlType.kVelocity);
+        // m_intakePidController.setReference(getIntakeTargetSpeed(), CANSparkMax.ControlType.kVelocity);
     }
 
     public void saveTime() {
@@ -196,7 +209,7 @@ public class NoteSystem {
     public boolean isIntakeStalled() {
         boolean isStopped = intakeEncoder.getVelocity() < 100; // TODO: make constants
         boolean hasRunLong = Timer.getFPGATimestamp() - startTime > 0.5;
-        return isStopped && hasRunLong;
+        return isStopped && hasRunLong && aux.getLeftBumper();
     }
 
     public boolean isRevving() {
@@ -227,6 +240,77 @@ public class NoteSystem {
          * Y button (press): stops motors
          */
 
+// NOT REAL CODE (FOR COSI), SEE COMMENTED BELOW FOR COMP CODE
+         if (state == NoteAction.STOPPED) {
+            stopMotors();
+            if (aux.getLeftBumper()) {
+                startIntake(NoteAction.INTAKE);
+            } else if (aux.getXButton()) {
+                startIntake(NoteAction.REVERSEINTAKE);
+            } else if (aux.getRightBumperPressed()) {
+                startRevUp(ShootMode.NORMAL);
+            } else if (aux.getBButtonPressed()) {
+                startRevUp(ShootMode.SIDE);
+            } else if (aux.getAButtonPressed()) {
+                startRevUp(ShootMode.AMP);
+            } else if (aux.getLeftTriggerAxis() > Constants.TRIGGER_DEADZONE) {
+                startRevUp(ShootMode.TRAP);
+            }
+        } else if (state == NoteAction.INTAKE) {
+            if (aux.getLeftBumperReleased()) {
+                state = NoteAction.STOPPED;
+            } else if (isNoteDetected()) { // limit switch is pressed ("is note detected", not "is not detected")
+                state = NoteAction.HOLD;
+            }
+            if (isIntakeStalled()) {
+                stopMotors();
+            } else {
+                setMotors();
+            }
+        } else if (state == NoteAction.REVERSEINTAKE) { // FROM STOPPED OR HOLD
+            setMotors();
+            if (aux.getXButtonReleased()) {
+                state = NoteAction.STOPPED;
+            }
+        } else if (state == NoteAction.HOLD) {
+            stopMotors();
+            if (aux.getRightBumperPressed()) {
+                startRevUp(ShootMode.NORMAL);
+            } else if (aux.getBButtonPressed()) {
+                startRevUp(ShootMode.SIDE);
+            } else if (aux.getAButtonPressed()) {
+                startRevUp(ShootMode.AMP);
+            } else if (aux.getLeftTriggerAxis() > Constants.TRIGGER_DEADZONE) {
+                startRevUp(ShootMode.TRAP);
+            } else if (aux.getXButton()) {
+                state = NoteAction.REVERSEINTAKE;
+                saveTime();
+            }
+        } else if (state == NoteAction.REV_UP) {
+            setMotors();
+            boolean hasRunLong = Timer.getFPGATimestamp() - startTime > 1.5; // for percent shooting, will never be "atSpeed"
+            if (isAtSpeed() || hasRunLong) { // will shoot if it's run too long (will basically be at speed anyway)
+                if (aux.getRightTriggerAxis() > Constants.TRIGGER_DEADZONE) {
+                    state = NoteAction.SHOOT;
+                    saveTime();
+                }
+                if (DriverStation.isAutonomous() || shootMode == ShootMode.AMP || shootMode == ShootMode.TRAP) {
+                    state = NoteAction.SHOOT;
+                    saveTime();
+                    // } //TODO: MIGHT NEED TO DELETE FOR COSI
+                }
+            }
+            // TODO: test if we want to be able to shoot not at speed in teleop
+        } else if (state == NoteAction.SHOOT) {
+            setMotors();
+            if (Timer.getFPGATimestamp() - startTime > 1.0) { // do not set < 1
+                state = NoteAction.STOPPED;
+            }
+        }
+    
+
+
+         /*
         if (state == NoteAction.STOPPED) {
             stopMotors();
             if (aux.getLeftBumper()) {
@@ -302,7 +386,10 @@ public class NoteSystem {
         } else {
             aux.setRumble(GenericHID.RumbleType.kLeftRumble, 0.0);
         }
+
+        */
     }
+
 
     public void updateDashboard() {
         SmartDashboard.putBoolean("Note Detected?", isNoteDetected()); // green box if it is detected
@@ -310,6 +397,9 @@ public class NoteSystem {
         SmartDashboard.putBoolean("Ready to Shoot", isAtSpeed());
         SmartDashboard.putBoolean("Revving", isRevving());
         SmartDashboard.putString("NoteState", noteState);
+        SmartDashboard.putNumber("Shooter Velocity", shooterEncoder.getVelocity());
+        SmartDashboard.putNumber("Intake Velocity", intakeEncoder.getVelocity());
+        SmartDashboard.putNumber("Holder Velocity", holdMotor.getMotorOutputPercent());
     }
 
     public void setUpPid() {

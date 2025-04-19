@@ -22,24 +22,58 @@ public class Climber {
         rightClimber.setNeutralMode(NeutralMode.Coast);
     }
 
-    public void climb() {
+    // CTR Electronics documentation uses "sensors" not "encoders"
+    public void resetClimberEncoders() {
+        leftClimber.setSelectedSensorPosition(0);
+        rightClimber.setSelectedSensorPosition(0);
+    }
 
+    // test code: will stop climber at highest position, then pressing again will drive down to a max position (so it doesn't lock the chain under the arm)
+    // public void testCodeClimb() {
+    //     if (DriveTrain.driveController.getLeftTriggerAxis() > Constants.TRIGGER_DEADZONE) { // left climber
+    //         if (leftClimber.getSelectedSensorPosition() > 500) { // TODO: CHANGE VALUE
+    //             leftClimber.set(-0.8);
+    //         } else {
+    //             leftClimber.set(0);
+    //         }
+    //     } else if (reverseClimbController.getXButton()) {
+    //         leftClimber.set(0.4);
+    //     } else {
+    //         leftClimber.set(0);
+    //     }
+
+    //     if (DriveTrain.driveController.getLeftTriggerAxis() > Constants.TRIGGER_DEADZONE) { // right climber
+    //         if (rightClimber.getSelectedSensorPosition() > 500) { // TODO: CHANGE VALUE
+    //             rightClimber.set(-0.8);
+    //         } else {
+    //             rightClimber.set(0);
+    //         }
+    //     } else if (reverseClimbController.getAButton()) {
+    //         rightClimber.set(0.4);
+    //     } else {
+    //         rightClimber.set(0);
+    //     }
+    // }
+
+    public void climb() {
         if (DriveTrain.driveController.getLeftTriggerAxis() > Constants.TRIGGER_DEADZONE) {
-            leftClimber.set(-0.8); //was going the wrong direction
+            leftClimber.set(-1);
         } else if (reverseClimbController.getXButton()) {
             leftClimber.set(0.4);
+        } else if (DriveTrain.driveController.getYButton()) { // REMOVE IF USING WRENCHES
+            leftClimber.set(1);
         } else {
             leftClimber.set(0);
         }
         
         if (DriveTrain.driveController.getRightTriggerAxis() > Constants.TRIGGER_DEADZONE) {
-            rightClimber.set(-0.8); //was going the wrong direction 
+            rightClimber.set(-1); // full speed for COSI "waving" (for Devin)
         } else if (reverseClimbController.getAButton()) {
             rightClimber.set(0.4);
+        } else if (DriveTrain.driveController.getBButton()) { // REMOVE IF USING WRENCHES
+                rightClimber.set(1);
         } else {
             rightClimber.set(0);
         }
-
     }
-
 }

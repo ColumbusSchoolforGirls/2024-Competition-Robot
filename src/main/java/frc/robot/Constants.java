@@ -49,7 +49,7 @@ public final class Constants {
     public static final int SIDE_SHOOTING_THRESHOLD = 3150;
 
     public static final int TRAP_SHOOTER_RPM = -3200;
-    public static final int TRAP_INTAKE_RPM = 3100;
-    public static final int TRAP_SHOOTING_THRESHOLD = 3050;
+    public static final int TRAP_INTAKE_RPM = 5000; // og 3100
+    public static final int TRAP_SHOOTING_THRESHOLD = 4800; //og 3050
     public static final int TRAP_INTAKE_THRESHOLD = 2950;
 }

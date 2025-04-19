@@ -123,8 +123,6 @@ public class DriveTrain {
 
     public void centerNote(){
         setBrakeMode();
-
-        
     }
 
     public void drive(double normalSpeed, double crawlSpeed, boolean noDeadZone) { // scaling
@@ -222,7 +220,7 @@ public class DriveTrain {
         driveDifference = targetDistance - getFrontLeftEncoder();
         startAutoDriveTime = Timer.getFPGATimestamp(); // this one - ok...
 
-        // this is the old auto drive in case the trapezoid one breaks things
+        // this is the old auto dmrive in case the trapezoid one breaks things
         // if (Math.abs(driveDifference) < Constants.DISTANCE_TOLERANCE) {
         // speed = 0;
 
@@ -242,11 +240,11 @@ public class DriveTrain {
         // }
         // }
 
-        double vMax = 0.35;
-        double speedUpDistance = 15;
+        double vMax = 0.25;
+        double speedUpDistance = 10;
         double position = Math.abs(getFrontLeftEncoder());
-        double minSpeed = 0.1;
-        double slowDownDistance = 20; // might need to change
+        double minSpeed = 0.08;
+        double slowDownDistance = 20; // might need to change //changed from 20 to 15
 
         // testing needed for trapezoidal
         // this is a trapezoidal autodrive, which means that it starts slower and gets
@@ -256,11 +254,14 @@ public class DriveTrain {
             speed = 0;
         } else {
             if (position < speedUpDistance) {
+                System.out.println("1: " + driveDifference);
                 speed = Math.max(vMax * (position / speedUpDistance), minSpeed);
-            } else if (driveDifference > slowDownDistance) {
+            } else if (Math.abs(driveDifference) > slowDownDistance) {
+                System.out.println("2: " + driveDifference);
                 speed = vMax;
             } else {
-                speed = Math.max(vMax * (driveDifference / slowDownDistance), minSpeed);
+                System.out.println("3p: " + driveDifference);
+                speed = Math.max(vMax * (Math.abs(driveDifference) / slowDownDistance), minSpeed);
             }
             if (driveDifference < 0) {
                 speed *= -1;

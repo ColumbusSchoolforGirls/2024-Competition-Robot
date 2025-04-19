@@ -22,6 +22,9 @@ import edu.wpi.first.wpilibj.DriverStation;
  * build.gradle file in the
  * project.
  */
+
+// TODO: add messages for logging
+
 public class Robot extends TimedRobot {
 
   // our different files
@@ -55,7 +58,6 @@ public class Robot extends TimedRobot {
     // Record both DS control and joystick data
     DriverStation.startDataLog(DataLogManager.getLog());
 
-
     limelight = new Limelight(driveTrain);
     driveTrain = new DriveTrain(limelight); // PS this rests encoders at initialization
     noteSystem = new NoteSystem(limelight);
@@ -65,6 +67,7 @@ public class Robot extends TimedRobot {
 
     climber.setClimb(); // makes sure its stopped
     climber.setCoast();
+    climber.resetClimberEncoders(); 
 
     // autopath options for dashboard
     autoPaths.put("Left Main", AutoPaths.autoLeftMain);
@@ -74,6 +77,9 @@ public class Robot extends TimedRobot {
     autoPaths.put("Left Drive", AutoPaths.autoLeftDrive);
     autoPaths.put("Middle Drive", AutoPaths.autoMiddleDrive);
     autoPaths.put("Right Drive", AutoPaths.autoRightDrive);
+
+    autoPaths.put("Left Shoot ONLY", AutoPaths.autoLeftShootONLY);
+    autoPaths.put("FOR KRISTINA", AutoPaths.forKristina);
 
     for (String autoPathName : autoPaths.keySet()) {
       m_chooser.addOption(autoPathName, autoPathName);
